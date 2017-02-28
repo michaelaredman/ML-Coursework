@@ -124,7 +124,7 @@ contains
         implicit none
         real(kind=8), intent(in) :: point1, point2, period, var_sin
         real(kind=8) :: sin_cov
-        sin_cov = var_sin*exp(-2*(sin(point1 - point2)/period)*(sin(point1 - point2)/period))
+        sin_cov = var_sin*exp(-2*(sin((point1 - point2)/period))*(sin((point1 - point2)/period)))
     end function sin_cov
 
     function comb_cov(point1, point2, period, lambda, var_se, var_sin)
