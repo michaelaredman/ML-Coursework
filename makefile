@@ -1,2 +1,2 @@
 make:
-	f2py -c expectation.f90 -m cluster 
+	f2py -c -llapack expectation.f90 -m cluster 

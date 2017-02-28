@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import time
 from scipy.stats import multivariate_normal
 from cluster import cluster as cl
 
@@ -71,13 +72,17 @@ class GaussianMixture:
         self.tau = expects.mean(axis=0)
 
     def _update_mu(self, expects):
+        print('Start mu update: ', time.ctime())
         for k in range(self.nk):
             self.mu[k] = np.multiply(expects[:, k][:, None], self.datapoints).sum(axis=0)/expects[:, k].sum()
+        print('end mu update: ', time.ctime())
         
     def _update_sigma(self, expects):
+        print('Start sigma update: ', time.ctime())
         for k in range(self.nk):
             sum_terms = np.array([expects[i, k]*np.outer(self.datapoints[i, :] - self.mu[k], self.datapoints[i, :] - self.mu[k]) for i in range(self.nPoints)])
             self.sigma[k] = sum_terms.sum(axis=0)/expects[:, k].sum()
+        print('end sigma update: ', time.ctime())
             
     def update(self):
         sigma_inv = np.array([np.linalg.inv(sigma) for sigma in self.sigma])
@@ -91,7 +96,11 @@ class GaussianMixture:
         for i in range(N):
             self.update()
 
-    def classify(self):
-        expectation = np.array(cl.tmatrix(self.datapoints, self.tau, self.mu, sigma_inv, denoms))
+    def classify(self, points=None):
+        if points==None:
+            points = self.datapoints
+        sigma_inv = np.array([np.linalg.inv(sigma) for sigma in self.sigma])
+        denoms = np.array([np.linalg.det(2.0*np.pi*sigma) for sigma in self.sigma])
+        expectation = np.array(cl.tmatrix(points, self.tau, self.mu, sigma_inv, denoms))
         return np.array([np.argmax(probs) for probs in expectation])
 
