@@ -1,5 +1,6 @@
 import numpy as np
 import sklearn
+import time
 from matplotlib import pyplot as plt
 from scipy import misc
 from scipy.optimize import minimize
@@ -27,12 +28,12 @@ def neg_log_likelihood(y, period, lmbda, var_se, var_sin, std):
     return term1 + term2 + term3
 
 helper = lambda period,lmbda, var_se, var_sin, std : neg_log_likelihood(co2, period, lmbda, var_se, var_sin, std)
-mins = minimize(lambda x: helper(*x), x0=[1, 1, 1, 1, 1], method='BFGS')
+#mins = minimize(lambda x: helper(*x), x0=[1, 1, 1, 1, 1], method='BFGS')
 
 lmbda_opt = 0.118
 sigma_opt = 8.7e-09
 
-extra = np.arange(431.5, 500)
+extra = np.arange(431.5, 600)
 
 thing = cl.kernal(months, co2, extra, 2.7e-01, 1.09, 3.05e03, 3.0e03, 2.0e3)
 thing2 = cl.kernal(months, co2, extra, 2.7e-01, 1.09, 3.05e03, 3.0e03, 2.0e3)
@@ -45,7 +46,18 @@ def plotter(period, lmbda, var_se, var_sin, std):
     plt.savefig(file)
     plt.close()
 
-helper2 = lambda lmbda, var_se, var_sin : neg_log_likelihood(co2, 3.81, lmbda, var_se, var_sin, 0.1)
-mins = minimize(lambda x: helper2(*x), x0=[1, 1, 1], method='BFGS')
-plotter(3.81, 2.08e03, 2.08e03, -1.17, 0.1)
-ker = cl.kernal(months, co2, extra, std, period, lmbda, var_se, var_sin)
+std = 0.75
+helper2 = lambda lmbda, var_se, var_sin : neg_log_likelihood(co2, 3.81, lmbda, var_se, var_sin, std)
+find_mins = minimize(lambda x: helper2(*x), x0=[1, 1, 1], method='BFGS')
+mins = find_mins['x']
+#mins = np.array([4.86712438e+03,   4.87102545e+03,   3.03390715e+00])
+plotter(3.81, *mins, std)
+ker = cl.kernal(months,  co2, extra, std, 3.81, *mins)
+
+mu = ker[0]
+sd = np.diagonal(ker[1])
+plt.plot(months, co2)
+plt.fill_between(extra, mu - sd, mu + sd, color='red')
+file = 'spread{}.png'.format(time.clock())
+plt.savefig(file)
+plt.close()

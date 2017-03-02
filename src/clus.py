@@ -72,17 +72,18 @@ class GaussianMixture:
         self.tau = expects.mean(axis=0)
 
     def _update_mu(self, expects):
-        print('Start mu update: ', time.ctime())
         for k in range(self.nk):
             self.mu[k] = np.multiply(expects[:, k][:, None], self.datapoints).sum(axis=0)/expects[:, k].sum()
-        print('end mu update: ', time.ctime())
         
-    def _update_sigma(self, expects):
+    def _old_update_sigma(self, expects):
         print('Start sigma update: ', time.ctime())
         for k in range(self.nk):
             sum_terms = np.array([expects[i, k]*np.outer(self.datapoints[i, :] - self.mu[k], self.datapoints[i, :] - self.mu[k]) for i in range(self.nPoints)])
             self.sigma[k] = sum_terms.sum(axis=0)/expects[:, k].sum()
         print('end sigma update: ', time.ctime())
+
+    def _update_sigma(self, expects):
+        self.sigma = np.array(cl.sigma_update(self.datapoints, self.mu, expects))
             
     def update(self):
         sigma_inv = np.array([np.linalg.inv(sigma) for sigma in self.sigma])
@@ -103,4 +104,20 @@ class GaussianMixture:
         denoms = np.array([np.linalg.det(2.0*np.pi*sigma) for sigma in self.sigma])
         expectation = np.array(cl.tmatrix(points, self.tau, self.mu, sigma_inv, denoms))
         return np.array([np.argmax(probs) for probs in expectation])
-
+    
+    def loglikelihood(self, points=None):
+        if points==None:
+            points = self.datapoints
+        classified = self.classify(points)
+        logL = 0 #initialize the loglikelihood
+        #for every cluster
+        for k in range(self.kn):
+            x = points[classified == k] #select the points in the cluster
+            mean = self.mu[k]
+            sigma = self.sigma[k]
+            sigma_inv = np.linalg.inv(sigma)
+            denom = np.linalg.det(2.0*np.pi*sigma)
+            #increment loglikelihood by log pdf of the points in the cluster
+            logL += np.log(cl.normalPdf(x, mean, sigma_inv, denom)).sum()
+            
+        return logL

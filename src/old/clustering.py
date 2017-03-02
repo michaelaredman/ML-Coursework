@@ -1,7 +1,7 @@
 import numpy as np
 import random
 from scipy.stats import multivariate_normal
-from cluster.cluster import TMatrix
+from cluster import cluster as cl
 
 class k_means:
 
