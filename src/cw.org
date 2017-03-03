@@ -1,0 +1,12 @@
+
+* Question 4
+
+** Momentum
+
+** allowing std as variable for mle 
+
+Not practical to estimate std by ml as a large std will explain all the variance and not allow the other two paramters to be specified.
+
+** Interpolation useless
+
+*** 

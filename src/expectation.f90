@@ -103,6 +103,37 @@ contains
         
     end subroutine kernal
 
+    subroutine kernal_simple(xN, yN, xT, std, lambda, var_se, muT, sigmaT)
+        implicit none
+        integer :: i, N, T
+        real(kind=8), intent(in) :: lambda, std, var_se
+        real(kind=8), intent(in), dimension(:) :: xN, yN, xT
+        real(kind=8), intent(out), dimension(size(xT)) :: muT
+        real(kind=8), intent(out), dimension(size(xT), size(xT)) :: sigmaT
+
+        real(kind=8), dimension(size(xT), size(xT)) :: KT
+        real(kind=8), dimension(size(xN), size(xN)) :: KN, KN_edited, KN_inv
+        real(kind=8), dimension(size(xN), size(xT)) :: KNT
+        
+        N = size(xN)
+        T = size(xT)
+
+        KN = K_matrix_simple(xN, xN, lambda, var_se)
+        KT = K_matrix_simple(xT, xT, lambda, var_se)
+        KNT = K_matrix_simple(xN, xT, lambda, var_se)
+
+        KN_edited = KN
+        do i=1,N
+            KN_edited(i, i) = KN_edited(i, i) + std*std
+        end do
+
+        KN_inv = inv(KN_edited)
+        
+        muT = MATMUL(MATMUL(TRANSPOSE(KNT), KN_inv), yN)
+        sigmaT = KT - MATMUL(TRANSPOSE(KNT), MATMUL(KN_inv, KNT))
+        
+    end subroutine kernal_simple
+    
     function K_matrix(points1, points2, period, lambda, var_se, var_sin)
         implicit none
         real(kind=8), intent(in), dimension(:) :: points1, points2
@@ -120,6 +151,26 @@ contains
         end do
 
     end function K_matrix
+
+
+    function K_matrix_simple(points1, points2, lambda, var_se)
+        implicit none
+        real(kind=8), intent(in), dimension(:) :: points1, points2
+        real(kind=8), intent(in) :: lambda, var_se
+        real(kind=8), dimension(size(points1), size(points2)) :: K_matrix_simple
+        !f2py depend(points1, points2) K_matrix_simple
+        integer :: N1, N2, i, j
+        N1 = size(points1)
+        N2 = size(points2)
+
+        do i=1,N1
+            do j=1,N2
+                K_matrix_simple(i, j) = se_cov(points1(i), points2(j),  lambda, var_se)
+            end do
+        end do
+
+    end function K_matrix_simple
+
 
     function se_cov(point1, point2, lambda, var_se)
         implicit none

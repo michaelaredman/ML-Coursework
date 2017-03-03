@@ -20,19 +20,25 @@ gaus2 = GaussianMixture(cells, 2)
 gaus3 = GaussianMixture(cells, 3)
 gaus4 = GaussianMixture(cells, 4)
 
-km3.iterate(10)
-km3low = km3.clusters.reshape(640 ,640)
-coors = np.where(km3low==2)
+#km3.iterate(10)
+#km3low = km3.clusters.reshape(640 ,640)
+#coors = np.where(km3low==0)
+
+gaus2.iterate(20)
+#gaus2.classify(cells)
+coors = np.where(gaus2.classify(cells).reshape(640, 640) == 1)
 
 locs = np.vstack([coors[0], coors[1]]).T
 
 np.random.shuffle(locs)
 
-train = locs[:35000, :]
-test = locs[35000:, :]
-for i in np.arange(50, 70, 5):
+train = locs[:74000, :]
+test = locs[74000:, :]
+ll = []
+for i in np.arange(20, 80, 5):
+    print(i)
     gmm = GaussianMixture(train, i)
-    gmm.iterate(5)
-    ll = gmm.loglikelihood(test)
-    print("Loglikelihood for k={}: {}".format(i, ll))
+    gmm.iterate(10)
+    ll.append(gmm.loglikelihood(test))
 
+    

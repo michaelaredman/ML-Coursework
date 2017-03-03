@@ -62,7 +62,7 @@ class GaussianMixture:
         self.sigma = np.empty((self.nk, self.nDims, self.nDims))
         for k in range(self.nk):
             self.tau[k] = 1.0/self.nk
-            self.mu[k] = k/self.nk * np.ones(self.nDims) #some level of dispersion of starting points
+            self.mu[k] = self.datapoints[k, :] #some level of dispersion of starting points
             self.sigma[k] = np.identity(self.nDims)*500
 
     def _update_tau(self, expects):
@@ -103,21 +103,22 @@ class GaussianMixture:
         sigma_inv = np.array([np.linalg.inv(sigma) for sigma in self.sigma])
         denoms = np.array([np.linalg.det(2.0*np.pi*sigma) for sigma in self.sigma])
         expectation = np.array(cl.tmatrix(points, self.tau, self.mu, sigma_inv, denoms))
+        self.expectation = expectation
         return np.array([np.argmax(probs) for probs in expectation])
     
     def loglikelihood(self, points=None):
-        if points==None:
+        if points is None:
             points = self.datapoints
         classified = self.classify(points)
+        sigma_inv = np.array([np.linalg.inv(sigma) for sigma in self.sigma])
+        denoms = np.array([np.linalg.det(2.0*np.pi*sigma) for sigma in self.sigma])
+        expectation = np.array(cl.tmatrix(points, self.tau, self.mu, sigma_inv, denoms))
+        self.expectation = expectation
         logL = 0 #initialize the loglikelihood
-        #for every cluster
-        for k in range(self.kn):
-            x = points[classified == k] #select the points in the cluster
-            mean = self.mu[k]
-            sigma = self.sigma[k]
-            sigma_inv = np.linalg.inv(sigma)
-            denom = np.linalg.det(2.0*np.pi*sigma)
-            #increment loglikelihood by log pdf of the points in the cluster
-            logL += np.log(cl.normalPdf(x, mean, sigma_inv, denom)).sum()
-            
+        #increment loglikelihood by log pdf of the points in the cluster
+        for i, point in enumerate(points):
+            prob = 0
+            for k in range(self.nk):
+                prob += expectation[i, k] * cl.normalpdf(point, self.mu[k], sigma_inv[k], denoms[k])
+            logL += np.log(prob)
         return logL
