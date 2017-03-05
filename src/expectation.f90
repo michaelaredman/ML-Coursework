@@ -3,6 +3,17 @@ module cluster
 contains
 
     subroutine TMatrix(datapoints , tau, mu, sigma_inv, denoms, expectation)
+        !!
+        !! Computes the conditional membership probabilites of each point for each mixture component.
+        !!
+        !!IN:
+        !!  datapoints : array (nPoints, nDims)   -> The points we are considering.
+        !!         tau : array (kn)               -> Proportion of points belonging to each cluster.
+        !!          mu : array (kn, nDims)        -> The means for each cluster.
+        !!   sigma_inv : array (kn, nDims, nDims) -> The covariance matricies for each cluster.
+        !!      denoms : array (kn)               -> The denominator of the Gaussian likelihood for each cluster.
+        !!OUT:
+        !! expectation : array (nPoints, kn)      -> Membership probabilities.
        
         implicit none
         integer nPoints, nDims, kn, i, k
@@ -38,6 +49,7 @@ contains
     end subroutine TMatrix
 
     function normalPdf(x, mu, sigma_inv, denom)
+        !! Multivariate Gaussian probability density function
         real(kind=8), intent(in), dimension(:) :: mu, x
         real(kind=8), intent(in), dimension(:, :) :: sigma_inv
         real(kind=8), intent(in) :: denom
@@ -49,6 +61,7 @@ contains
 
 
     subroutine sigma_update(datapoints, mu, expectation, sigma)
+        !! Computes the updated covariance matricies using the EM algorithm.
         integer nk, nPoints, nDims, k, i, j, m
         real(kind=8), intent(in), dimension(:, :) :: datapoints, expectation, mu
         !f2py depend(mu) sigma
@@ -73,6 +86,26 @@ contains
     end subroutine
 
     subroutine kernal(xN, yN, xT, std, period, lambda, var_se, var_sin, muT, sigmaT)
+        !!
+        !! Computes the mean and covariance matrix for a Gaussian process with our periodic kernal function.
+        !!
+        !!NOTATION:
+        !! y_i = f(x_i) + e_i
+        !!
+        !!IN:
+        !!      xN : array (N)    -> x values of the points we are regressing.
+        !!      yN : array (N)    -> y values of the points we are regressing.
+        !!      xT : array (t)    -> x values of the points whose population parameters we are computing.
+        !!     std : +ve real     -> Standard deviation of e_i.
+        !!  period : real         -> Parameter determining period of the sinusoidal kernal.
+        !!  lambda : real         -> Length scales of the squared exponential kernal.
+        !!  var_se : real         -> Contribution of the squared exponential kernal to covariance.
+        !! var_sin : real         -> Contribution of the sinusoidal kernal to covariance.
+        !!
+        !!OUT:
+        !!     muT : array (T)    -> Mean of the y_i for the xT
+        !!  sigmaT : array (T, T) -> Covariance matrix of the y_i for the xT
+        
         implicit none
         integer :: i, N, T
         real(kind=8), intent(in) :: lambda, std, period, var_se, var_sin
@@ -104,6 +137,7 @@ contains
     end subroutine kernal
 
     subroutine kernal_simple(xN, yN, xT, std, lambda, var_se, muT, sigmaT)
+        !! Identical to the kernal subroutine but using a non-periodic kernal
         implicit none
         integer :: i, N, T
         real(kind=8), intent(in) :: lambda, std, var_se
@@ -135,6 +169,7 @@ contains
     end subroutine kernal_simple
     
     function K_matrix(points1, points2, period, lambda, var_se, var_sin)
+        !! Covariance matrix of the period kernal for the given points
         implicit none
         real(kind=8), intent(in), dimension(:) :: points1, points2
         real(kind=8), intent(in) :: lambda, period, var_se, var_sin
@@ -154,6 +189,7 @@ contains
 
 
     function K_matrix_simple(points1, points2, lambda, var_se)
+        !! Identical to the K_matrix subroutine but with non-periodic kernal.
         implicit none
         real(kind=8), intent(in), dimension(:) :: points1, points2
         real(kind=8), intent(in) :: lambda, var_se
@@ -173,6 +209,7 @@ contains
 
 
     function se_cov(point1, point2, lambda, var_se)
+        !! Squared exponential kernal function.
         implicit none
         real(kind=8), intent(in) :: point1, point2, lambda, var_se
         real(kind=8) :: se_cov
@@ -180,6 +217,7 @@ contains
     end function se_cov
 
     function sin_cov(point1, point2, period, var_sin)
+        !! Sinusoidal kernal function.
         implicit none
         real(kind=8), intent(in) :: point1, point2, period, var_sin
         real(kind=8) :: sin_cov
@@ -187,6 +225,7 @@ contains
     end function sin_cov
 
     function comb_cov(point1, point2, period, lambda, var_se, var_sin)
+        !! Kernal function combining the squared exponential and sinusoidal kernals 
         implicit none
         real(kind=8), intent(in) :: point1, point2, period, lambda, var_se, var_sin
         real(kind=8) :: comb_cov
