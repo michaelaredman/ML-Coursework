@@ -78,7 +78,7 @@ class GaussianMixture:
         for k in range(self.nk):
             self.tau[k] = 1.0/self.nk #start at an equal number of points per cluster
             self.mu[k] = points[k, :] #initial means at a random selection of the points
-            self.sigma[k] = np.identity(self.nDims)*500/nk #initial covariance matricies diagonal with large variance
+            self.sigma[k] = np.identity(self.nDims)*500 #initial covariance matricies diagonal with large variance
 
     def _update_tau(self, expects):
         """
