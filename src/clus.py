@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import time
+import copy
 from scipy.stats import multivariate_normal
 from cluster import cluster as cl
 
@@ -73,12 +74,13 @@ class GaussianMixture:
         self.tau = np.empty(self.nk)
         self.mu = np.empty((self.nk, self.nDims))
         self.sigma = np.empty((self.nk, self.nDims, self.nDims))
-        points = self.datapoints #copy the datapoints as shuffle works in-place
+        points = copy.deepcopy(self.datapoints) #copy the datapoints as shuffle works in-place
         np.random.shuffle(points)
         for k in range(self.nk):
             self.tau[k] = 1.0/self.nk #start at an equal number of points per cluster
             self.mu[k] = points[k, :] #initial means at a random selection of the points
-            self.sigma[k] = np.identity(self.nDims)*500 #initial covariance matricies diagonal with large variance
+            #initial covariance matricies diagonal with large variance
+            self.sigma[k] = np.identity(self.nDims)*500
 
     def _update_tau(self, expects):
         """
