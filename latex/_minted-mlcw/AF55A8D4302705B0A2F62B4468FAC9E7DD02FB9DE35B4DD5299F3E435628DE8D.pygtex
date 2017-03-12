@@ -1,0 +1,171 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{numpy} \PYGemacs{k+kn}{as} \PYGemacs{n+nn}{np}
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{random}
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{time}
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{copy}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{scipy.stats} \PYGemacs{k+kn}{import} \PYGemacs{n}{multivariate\PYGemacsZus{}normal}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{cluster} \PYGemacs{k+kn}{import} \PYGemacs{n}{cluster} \PYGemacs{k}{as} \PYGemacs{n}{cl}
+
+\PYGemacs{k}{class} \PYGemacs{n+nc}{KMeans}\PYGemacs{p}{:}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{\PYGemacsZus{}\PYGemacsZus{}init\PYGemacsZus{}\PYGemacsZus{}}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{,} \PYGemacs{n}{datapoints}\PYGemacs{p}{,} \PYGemacs{n}{nk}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Parameters}
+\PYGemacs{l+s+sd}{        \PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}}
+\PYGemacs{l+s+sd}{        datapoints : (nPoints, nDims) array}
+\PYGemacs{l+s+sd}{            Matrix of data points}
+\PYGemacs{l+s+sd}{        nk : integer}
+\PYGemacs{l+s+sd}{            Number of clusters}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nPoints} \PYGemacs{o}{=} \PYGemacs{n}{datapoints}\PYGemacs{o}{.}\PYGemacs{n}{shape}\PYGemacs{p}{[}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{]}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nDims} \PYGemacs{o}{=} \PYGemacs{n}{datapoints}\PYGemacs{o}{.}\PYGemacs{n}{shape}\PYGemacs{p}{[}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{]}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{datapoints} \PYGemacs{o}{=} \PYGemacs{n}{datapoints}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nk} \PYGemacs{o}{=} \PYGemacs{n}{nk}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{init\PYGemacsZus{}assign}\PYGemacs{p}{()}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{init\PYGemacsZus{}assign}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Assign each datapoint to a random cluster and calculate the cluster means}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{clusters} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{([}\PYGemacs{n}{random}\PYGemacs{o}{.}\PYGemacs{n}{choice}\PYGemacs{p}{(}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{arange}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{,} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nk}\PYGemacs{p}{))} \PYGemacs{k}{for} \PYGemacs{n}{i} \PYGemacs{o+ow}{in} \PYGemacs{n+nb}{range}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nPoints}\PYGemacs{p}{)])}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{update}\PYGemacs{p}{()}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{assignment}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Assign points to the cluster with mean closest to their own}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{n}{squared\PYGemacsZus{}distances} \PYGemacs{o}{=} \PYGemacs{p}{[[}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{dot}\PYGemacs{p}{(}\PYGemacs{n}{point} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{cMean}\PYGemacs{p}{,} \PYGemacs{n}{point} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{cMean}\PYGemacs{p}{)} \PYGemacs{k}{for} \PYGemacs{n}{cMean} \PYGemacs{o+ow}{in} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{means}\PYGemacs{p}{]} \PYGemacs{k}{for} \PYGemacs{n}{point} \PYGemacs{o+ow}{in} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{datapoints}\PYGemacs{p}{]}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{clusters} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{([}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{argmin}\PYGemacs{p}{(}\PYGemacs{n}{distances}\PYGemacs{p}{)} \PYGemacs{k}{for} \PYGemacs{n}{distances} \PYGemacs{o+ow}{in} \PYGemacs{n}{squared\PYGemacsZus{}distances}\PYGemacs{p}{])}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{update}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Update the values of the means to be the same}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{means} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{([}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{datapoints}\PYGemacs{p}{[}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{clusters} \PYGemacs{o}{==} \PYGemacs{n}{k}\PYGemacs{p}{,} \PYGemacs{p}{:]}\PYGemacs{o}{.}\PYGemacs{n}{mean}\PYGemacs{p}{(}\PYGemacs{n}{axis}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{)} \PYGemacs{k}{for} \PYGemacs{n}{k} \PYGemacs{o+ow}{in} \PYGemacs{n+nb}{range}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nk}\PYGemacs{p}{)])}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{iterate}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{,} \PYGemacs{n}{N}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Compute N iterations of the K Means algorithm}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{k}{for} \PYGemacs{n}{i} \PYGemacs{o+ow}{in} \PYGemacs{n+nb}{range}\PYGemacs{p}{(}\PYGemacs{n}{N}\PYGemacs{p}{):}
+            \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{assignment}\PYGemacs{p}{()}
+            \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{update}\PYGemacs{p}{()}
+
+\PYGemacs{k}{class} \PYGemacs{n+nc}{GaussianMixture}\PYGemacs{p}{:}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{\PYGemacsZus{}\PYGemacsZus{}init\PYGemacsZus{}\PYGemacsZus{}}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{,} \PYGemacs{n}{datapoints}\PYGemacs{p}{,} \PYGemacs{n}{nk}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Parameters}
+\PYGemacs{l+s+sd}{        \PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}}
+\PYGemacs{l+s+sd}{        datapoints : (nPoints, nDims) array}
+\PYGemacs{l+s+sd}{            Matrix of data points}
+\PYGemacs{l+s+sd}{        nk : integer}
+\PYGemacs{l+s+sd}{            Number of mixture components}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nPoints} \PYGemacs{o}{=} \PYGemacs{n}{datapoints}\PYGemacs{o}{.}\PYGemacs{n}{shape}\PYGemacs{p}{[}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{]}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nDims} \PYGemacs{o}{=} \PYGemacs{n}{datapoints}\PYGemacs{o}{.}\PYGemacs{n}{shape}\PYGemacs{p}{[}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{]}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{datapoints} \PYGemacs{o}{=} \PYGemacs{n}{datapoints}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nk} \PYGemacs{o}{=} \PYGemacs{n}{nk}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{init\PYGemacsZus{}assign}\PYGemacs{p}{()}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{init\PYGemacsZus{}assign}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Assign initial starting values to the parameters of the model}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{tau} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{empty}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nk}\PYGemacs{p}{)}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{mu} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{empty}\PYGemacs{p}{((}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nk}\PYGemacs{p}{,} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nDims}\PYGemacs{p}{))}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{sigma} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{empty}\PYGemacs{p}{((}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nk}\PYGemacs{p}{,} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nDims}\PYGemacs{p}{,} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nDims}\PYGemacs{p}{))}
+        \PYGemacs{n}{points} \PYGemacs{o}{=} \PYGemacs{n}{copy}\PYGemacs{o}{.}\PYGemacs{n}{deepcopy}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{datapoints}\PYGemacs{p}{)} \PYGemacs{c+c1}{\PYGemacsZsh{}copy the datapoints as shuffle works in\PYGemacsZhy{}place}
+        \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{random}\PYGemacs{o}{.}\PYGemacs{n}{shuffle}\PYGemacs{p}{(}\PYGemacs{n}{points}\PYGemacs{p}{)}
+        \PYGemacs{k}{for} \PYGemacs{n}{k} \PYGemacs{o+ow}{in} \PYGemacs{n+nb}{range}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nk}\PYGemacs{p}{):}
+            \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{tau}\PYGemacs{p}{[}\PYGemacs{n}{k}\PYGemacs{p}{]} \PYGemacs{o}{=} \PYGemacs{l+m+mf}{1.0}\PYGemacs{o}{/}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nk} \PYGemacs{c+c1}{\PYGemacsZsh{}start at an equal number of points per cluster}
+            \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{mu}\PYGemacs{p}{[}\PYGemacs{n}{k}\PYGemacs{p}{]} \PYGemacs{o}{=} \PYGemacs{n}{points}\PYGemacs{p}{[}\PYGemacs{n}{k}\PYGemacs{p}{,} \PYGemacs{p}{:]} \PYGemacs{c+c1}{\PYGemacsZsh{}initial means at a random selection of the points}
+            \PYGemacs{c+c1}{\PYGemacsZsh{}initial covariance matricies diagonal with large variance}
+            \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{sigma}\PYGemacs{p}{[}\PYGemacs{n}{k}\PYGemacs{p}{]} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{identity}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nDims}\PYGemacs{p}{)}\PYGemacs{o}{*}\PYGemacs{l+m+mi}{500}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{\PYGemacsZus{}update\PYGemacsZus{}tau}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{,} \PYGemacs{n}{expects}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Compute the new values of tau after an iteration.}
+\PYGemacs{l+s+sd}{        NB: tau[k] is the proportion of points belonging to cluster k}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{tau} \PYGemacs{o}{=} \PYGemacs{n}{expects}\PYGemacs{o}{.}\PYGemacs{n}{mean}\PYGemacs{p}{(}\PYGemacs{n}{axis}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{)}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{\PYGemacsZus{}update\PYGemacsZus{}mu}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{,} \PYGemacs{n}{expects}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Compute the new values of mu after an iteration.}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{k}{for} \PYGemacs{n}{k} \PYGemacs{o+ow}{in} \PYGemacs{n+nb}{range}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nk}\PYGemacs{p}{):}
+            \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{mu}\PYGemacs{p}{[}\PYGemacs{n}{k}\PYGemacs{p}{]} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{multiply}\PYGemacs{p}{(}\PYGemacs{n}{expects}\PYGemacs{p}{[:,} \PYGemacs{n}{k}\PYGemacs{p}{][:,} \PYGemacs{n+nb+bp}{None}\PYGemacs{p}{],} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{datapoints}\PYGemacs{p}{)}\PYGemacs{o}{.}\PYGemacs{n}{sum}\PYGemacs{p}{(}\PYGemacs{n}{axis}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{)}\PYGemacs{o}{/}\PYGemacs{n}{expects}\PYGemacs{p}{[:,} \PYGemacs{n}{k}\PYGemacs{p}{]}\PYGemacs{o}{.}\PYGemacs{n}{sum}\PYGemacs{p}{()}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{\PYGemacsZus{}old\PYGemacsZus{}update\PYGemacsZus{}sigma}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{,} \PYGemacs{n}{expects}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Depreciated}
+\PYGemacs{l+s+sd}{        \PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}}
+\PYGemacs{l+s+sd}{        Compute the new values of the covariance matrix after an iteration.}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{k}{print}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}Start sigma update: \PYGemacsZsq{}}\PYGemacs{p}{,} \PYGemacs{n}{time}\PYGemacs{o}{.}\PYGemacs{n}{ctime}\PYGemacs{p}{())}
+        \PYGemacs{k}{for} \PYGemacs{n}{k} \PYGemacs{o+ow}{in} \PYGemacs{n+nb}{range}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nk}\PYGemacs{p}{):}
+            \PYGemacs{n}{sum\PYGemacsZus{}terms} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{([}\PYGemacs{n}{expects}\PYGemacs{p}{[}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{k}\PYGemacs{p}{]}\PYGemacs{o}{*}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{outer}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{datapoints}\PYGemacs{p}{[}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{p}{:]} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{mu}\PYGemacs{p}{[}\PYGemacs{n}{k}\PYGemacs{p}{],} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{datapoints}\PYGemacs{p}{[}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{p}{:]} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{mu}\PYGemacs{p}{[}\PYGemacs{n}{k}\PYGemacs{p}{])} \PYGemacs{k}{for} \PYGemacs{n}{i} \PYGemacs{o+ow}{in} \PYGemacs{n+nb}{range}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nPoints}\PYGemacs{p}{)])}
+            \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{sigma}\PYGemacs{p}{[}\PYGemacs{n}{k}\PYGemacs{p}{]} \PYGemacs{o}{=} \PYGemacs{n}{sum\PYGemacsZus{}terms}\PYGemacs{o}{.}\PYGemacs{n}{sum}\PYGemacs{p}{(}\PYGemacs{n}{axis}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{)}\PYGemacs{o}{/}\PYGemacs{n}{expects}\PYGemacs{p}{[:,} \PYGemacs{n}{k}\PYGemacs{p}{]}\PYGemacs{o}{.}\PYGemacs{n}{sum}\PYGemacs{p}{()}
+        \PYGemacs{k}{print}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}end sigma update: \PYGemacsZsq{}}\PYGemacs{p}{,} \PYGemacs{n}{time}\PYGemacs{o}{.}\PYGemacs{n}{ctime}\PYGemacs{p}{())}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{\PYGemacsZus{}update\PYGemacsZus{}sigma}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{,} \PYGemacs{n}{expects}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Compute the new values of the covariance matrix after an iteration.}
+\PYGemacs{l+s+sd}{        Calls fortran code in cluster module for speed \PYGemacsZhy{}\PYGemacsZhy{} see \PYGemacsZus{}old\PYGemacsZus{}update\PYGemacsZus{}sigma for equivalent (but slower) Python code.}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{sigma} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{(}\PYGemacs{n}{cl}\PYGemacs{o}{.}\PYGemacs{n}{sigma\PYGemacsZus{}update}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{datapoints}\PYGemacs{p}{,} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{n}{expects}\PYGemacs{p}{))}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{update}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Compute new values of parameters by the EM\PYGemacsZhy{}algorithm.}
+
+\PYGemacs{l+s+sd}{        Computed vairables}
+\PYGemacs{l+s+sd}{        \PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}\PYGemacsZhy{}}
+\PYGemacs{l+s+sd}{        expectation : (nPoints, nk) array}
+\PYGemacs{l+s+sd}{            Conditional membership probabilites of each point for each mixture component.}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{n}{sigma\PYGemacsZus{}inv} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{([}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{linalg}\PYGemacs{o}{.}\PYGemacs{n}{inv}\PYGemacs{p}{(}\PYGemacs{n}{sigma}\PYGemacs{p}{)} \PYGemacs{k}{for} \PYGemacs{n}{sigma} \PYGemacs{o+ow}{in} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{sigma}\PYGemacs{p}{])}
+        \PYGemacs{n}{denoms} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{([}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{linalg}\PYGemacs{o}{.}\PYGemacs{n}{det}\PYGemacs{p}{(}\PYGemacs{l+m+mf}{2.0}\PYGemacs{o}{*}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{pi}\PYGemacs{o}{*}\PYGemacs{n}{sigma}\PYGemacs{p}{)} \PYGemacs{k}{for} \PYGemacs{n}{sigma} \PYGemacs{o+ow}{in} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{sigma}\PYGemacs{p}{])}
+        \PYGemacs{n}{expectation} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{(}\PYGemacs{n}{cl}\PYGemacs{o}{.}\PYGemacs{n}{tmatrix}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{datapoints}\PYGemacs{p}{,} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{tau}\PYGemacs{p}{,} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{n}{sigma\PYGemacsZus{}inv}\PYGemacs{p}{,} \PYGemacs{n}{denoms}\PYGemacs{p}{))}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{\PYGemacsZus{}update\PYGemacsZus{}tau}\PYGemacs{p}{(}\PYGemacs{n}{expectation}\PYGemacs{p}{)}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{\PYGemacsZus{}update\PYGemacsZus{}mu}\PYGemacs{p}{(}\PYGemacs{n}{expectation}\PYGemacs{p}{)}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{\PYGemacsZus{}update\PYGemacsZus{}sigma}\PYGemacs{p}{(}\PYGemacs{n}{expectation}\PYGemacs{p}{)}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{iterate}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{,} \PYGemacs{n}{N}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Execute N iterations of the EM algorithm.}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{k}{for} \PYGemacs{n}{i} \PYGemacs{o+ow}{in} \PYGemacs{n+nb}{range}\PYGemacs{p}{(}\PYGemacs{n}{N}\PYGemacs{p}{):}
+            \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{update}\PYGemacs{p}{()}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{classify}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{,} \PYGemacs{n}{points}\PYGemacs{o}{=}\PYGemacs{n+nb+bp}{None}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Assign each of the given points to its most likely cluster given the current parameter values.}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{k}{if} \PYGemacs{n}{points}\PYGemacs{o}{==}\PYGemacs{n+nb+bp}{None}\PYGemacs{p}{:}
+            \PYGemacs{n}{points} \PYGemacs{o}{=} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{datapoints}
+        \PYGemacs{n}{sigma\PYGemacsZus{}inv} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{([}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{linalg}\PYGemacs{o}{.}\PYGemacs{n}{inv}\PYGemacs{p}{(}\PYGemacs{n}{sigma}\PYGemacs{p}{)} \PYGemacs{k}{for} \PYGemacs{n}{sigma} \PYGemacs{o+ow}{in} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{sigma}\PYGemacs{p}{])}
+        \PYGemacs{n}{denoms} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{([}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{linalg}\PYGemacs{o}{.}\PYGemacs{n}{det}\PYGemacs{p}{(}\PYGemacs{l+m+mf}{2.0}\PYGemacs{o}{*}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{pi}\PYGemacs{o}{*}\PYGemacs{n}{sigma}\PYGemacs{p}{)} \PYGemacs{k}{for} \PYGemacs{n}{sigma} \PYGemacs{o+ow}{in} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{sigma}\PYGemacs{p}{])}
+        \PYGemacs{n}{expectation} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{(}\PYGemacs{n}{cl}\PYGemacs{o}{.}\PYGemacs{n}{tmatrix}\PYGemacs{p}{(}\PYGemacs{n}{points}\PYGemacs{p}{,} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{tau}\PYGemacs{p}{,} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{n}{sigma\PYGemacsZus{}inv}\PYGemacs{p}{,} \PYGemacs{n}{denoms}\PYGemacs{p}{))}
+        \PYGemacs{k}{return} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{([}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{argmax}\PYGemacs{p}{(}\PYGemacs{n}{probs}\PYGemacs{p}{)} \PYGemacs{k}{for} \PYGemacs{n}{probs} \PYGemacs{o+ow}{in} \PYGemacs{n}{expectation}\PYGemacs{p}{])}
+
+    \PYGemacs{k}{def} \PYGemacs{n+nf}{loglikelihood}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{p}{,} \PYGemacs{n}{points}\PYGemacs{o}{=}\PYGemacs{n+nb+bp}{None}\PYGemacs{p}{):}
+        \PYGemacs{l+s+sd}{\PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+\PYGemacs{l+s+sd}{        Compute the log\PYGemacsZhy{}likelihood of the given points under the current parameter values.}
+\PYGemacs{l+s+sd}{        \PYGemacsZdq{}\PYGemacsZdq{}\PYGemacsZdq{}}
+        \PYGemacs{k}{if} \PYGemacs{n}{points} \PYGemacs{o+ow}{is} \PYGemacs{n+nb+bp}{None}\PYGemacs{p}{:}
+            \PYGemacs{n}{points} \PYGemacs{o}{=} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{datapoints}
+        \PYGemacs{n}{sigma\PYGemacsZus{}inv} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{([}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{linalg}\PYGemacs{o}{.}\PYGemacs{n}{inv}\PYGemacs{p}{(}\PYGemacs{n}{sigma}\PYGemacs{p}{)} \PYGemacs{k}{for} \PYGemacs{n}{sigma} \PYGemacs{o+ow}{in} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{sigma}\PYGemacs{p}{])}
+        \PYGemacs{n}{denoms} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{([}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{linalg}\PYGemacs{o}{.}\PYGemacs{n}{det}\PYGemacs{p}{(}\PYGemacs{l+m+mf}{2.0}\PYGemacs{o}{*}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{pi}\PYGemacs{o}{*}\PYGemacs{n}{sigma}\PYGemacs{p}{)} \PYGemacs{k}{for} \PYGemacs{n}{sigma} \PYGemacs{o+ow}{in} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{sigma}\PYGemacs{p}{])}
+        \PYGemacs{n}{expectation} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{(}\PYGemacs{n}{cl}\PYGemacs{o}{.}\PYGemacs{n}{tmatrix}\PYGemacs{p}{(}\PYGemacs{n}{points}\PYGemacs{p}{,} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{tau}\PYGemacs{p}{,} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{n}{sigma\PYGemacsZus{}inv}\PYGemacs{p}{,} \PYGemacs{n}{denoms}\PYGemacs{p}{))}
+        \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{expectation} \PYGemacs{o}{=} \PYGemacs{n}{expectation}
+        \PYGemacs{n}{logL} \PYGemacs{o}{=} \PYGemacs{l+m+mi}{0} \PYGemacs{c+c1}{\PYGemacsZsh{}initialize the loglikelihood}
+        \PYGemacs{c+c1}{\PYGemacsZsh{}increment loglikelihood by log pdf of the points in the cluster}
+        \PYGemacs{k}{for} \PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{point} \PYGemacs{o+ow}{in} \PYGemacs{n+nb}{enumerate}\PYGemacs{p}{(}\PYGemacs{n}{points}\PYGemacs{p}{):}
+            \PYGemacs{n}{prob} \PYGemacs{o}{=} \PYGemacs{l+m+mi}{0}
+            \PYGemacs{k}{for} \PYGemacs{n}{k} \PYGemacs{o+ow}{in} \PYGemacs{n+nb}{range}\PYGemacs{p}{(}\PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{nk}\PYGemacs{p}{):}
+                \PYGemacs{n}{prob} \PYGemacs{o}{+=} \PYGemacs{n}{expectation}\PYGemacs{p}{[}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{k}\PYGemacs{p}{]} \PYGemacs{o}{*} \PYGemacs{n}{cl}\PYGemacs{o}{.}\PYGemacs{n}{normalpdf}\PYGemacs{p}{(}\PYGemacs{n}{point}\PYGemacs{p}{,} \PYGemacs{n+nb+bp}{self}\PYGemacs{o}{.}\PYGemacs{n}{mu}\PYGemacs{p}{[}\PYGemacs{n}{k}\PYGemacs{p}{],} \PYGemacs{n}{sigma\PYGemacsZus{}inv}\PYGemacs{p}{[}\PYGemacs{n}{k}\PYGemacs{p}{],} \PYGemacs{n}{denoms}\PYGemacs{p}{[}\PYGemacs{n}{k}\PYGemacs{p}{])}
+            \PYGemacs{n}{logL} \PYGemacs{o}{+=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{log}\PYGemacs{p}{(}\PYGemacs{n}{prob}\PYGemacs{p}{)}
+        \PYGemacs{k}{return} \PYGemacs{n}{logL}
+\end{Verbatim}

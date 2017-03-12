@@ -1,0 +1,274 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYGemacs{k}{module }\PYGemacs{n}{cluster}
+
+\PYGemacs{k}{contains}
+
+\PYGemacs{k}{    subroutine }\PYGemacs{n}{TMatrix}\PYGemacs{p}{(}\PYGemacs{n}{datapoints} \PYGemacs{p}{,} \PYGemacs{n}{tau}\PYGemacs{p}{,} \PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{n}{sigma\PYGemacsZus{}inv}\PYGemacs{p}{,} \PYGemacs{n}{denoms}\PYGemacs{p}{,} \PYGemacs{n}{expectation}\PYGemacs{p}{)}
+        \PYGemacs{c}{!!}
+        \PYGemacs{c}{!! Computes the conditional membership probabilites of each point for each mixture component.}
+        \PYGemacs{c}{!!}
+        \PYGemacs{c}{!!IN:}
+        \PYGemacs{c}{!!  datapoints : array (nPoints, nDims)   \PYGemacsZhy{}\PYGemacsZgt{} The points we are considering.}
+        \PYGemacs{c}{!!         tau : array (kn)               \PYGemacsZhy{}\PYGemacsZgt{} Proportion of points belonging to each cluster.}
+        \PYGemacs{c}{!!          mu : array (kn, nDims)        \PYGemacsZhy{}\PYGemacsZgt{} The means for each cluster.}
+        \PYGemacs{c}{!!   sigma\PYGemacsZus{}inv : array (kn, nDims, nDims) \PYGemacsZhy{}\PYGemacsZgt{} The covariance matricies for each cluster.}
+        \PYGemacs{c}{!!      denoms : array (kn)               \PYGemacsZhy{}\PYGemacsZgt{} The denominator of the Gaussian likelihood for each cluster.}
+        \PYGemacs{c}{!!OUT:}
+        \PYGemacs{c}{!! expectation : array (nPoints, kn)      \PYGemacsZhy{}\PYGemacsZgt{} Membership probabilities.}
+
+        \PYGemacs{k}{implicit none}
+\PYGemacs{k}{        }\PYGemacs{k+kt}{integer }\PYGemacs{n}{nPoints}\PYGemacs{p}{,} \PYGemacs{n}{nDims}\PYGemacs{p}{,} \PYGemacs{n}{kn}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{k}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{pi}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(:)} \PYGemacs{k+kd}{::} \PYGemacs{n}{tau}\PYGemacs{p}{,} \PYGemacs{n}{denoms}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(:,} \PYGemacs{p}{:)} \PYGemacs{k+kd}{::} \PYGemacs{n}{datapoints}\PYGemacs{p}{,} \PYGemacs{n}{mu}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(:,} \PYGemacs{p}{:,} \PYGemacs{p}{:)} \PYGemacs{k+kd}{::} \PYGemacs{n}{sigma\PYGemacsZus{}inv}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{datapoints}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{tau}\PYGemacs{p}{)),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{out}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{expectation}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{allocatable}\PYGemacs{p}{,} \PYGemacs{k}{dimension}\PYGemacs{p}{(:,} \PYGemacs{p}{:)} \PYGemacs{k+kd}{::} \PYGemacs{n}{probs}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{datapoints}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{2}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{point}
+
+        \PYGemacs{n}{nPoints} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{datapoints}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{)}
+        \PYGemacs{n}{nDims} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{datapoints}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{2}\PYGemacs{p}{)}
+        \PYGemacs{n}{kn} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{tau}\PYGemacs{p}{)}
+        \PYGemacs{n}{pi} \PYGemacs{o}{=} \PYGemacs{l+m+mf}{3.14159265368979}
+
+        \PYGemacs{k}{allocate}\PYGemacs{p}{(}\PYGemacs{n}{probs}\PYGemacs{p}{(}\PYGemacs{n}{nPoints}\PYGemacs{p}{,} \PYGemacs{n}{kn}\PYGemacs{p}{))}
+
+        \PYGemacs{k}{do }\PYGemacs{n}{i}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,}\PYGemacs{n}{nPoints}
+            \PYGemacs{n}{point} \PYGemacs{o}{=} \PYGemacs{n}{datapoints}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{,:)}
+            \PYGemacs{k}{do }\PYGemacs{n}{k}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,}\PYGemacs{n}{kn}
+                \PYGemacs{n}{probs}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{k}\PYGemacs{p}{)} \PYGemacs{o}{=} \PYGemacs{n}{normalPdf}\PYGemacs{p}{(}\PYGemacs{n}{point}\PYGemacs{p}{,} \PYGemacs{n}{mu}\PYGemacs{p}{(}\PYGemacs{n}{k}\PYGemacs{p}{,:),} \PYGemacs{n}{sigma\PYGemacsZus{}inv}\PYGemacs{p}{(}\PYGemacs{n}{k}\PYGemacs{p}{,:,:),} \PYGemacs{n}{denoms}\PYGemacs{p}{(}\PYGemacs{n}{k}\PYGemacs{p}{))}
+            \PYGemacs{k}{end do}
+\PYGemacs{k}{        end do}
+
+\PYGemacs{k}{        do }\PYGemacs{n}{i}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,}\PYGemacs{n}{nPoints}
+            \PYGemacs{n}{point} \PYGemacs{o}{=} \PYGemacs{n}{datapoints}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{,:)}
+            \PYGemacs{k}{do }\PYGemacs{n}{k}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,}\PYGemacs{n}{kn}
+                \PYGemacs{n}{expectation}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{k}\PYGemacs{p}{)} \PYGemacs{o}{=} \PYGemacs{n}{tau}\PYGemacs{p}{(}\PYGemacs{n}{k}\PYGemacs{p}{)}\PYGemacs{o}{*}\PYGemacs{n}{probs}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{k}\PYGemacs{p}{)}\PYGemacs{o}{/}\PYGemacs{n+nb}{SUM}\PYGemacs{p}{(}\PYGemacs{n}{tau}\PYGemacs{o}{*}\PYGemacs{n}{probs}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{p}{:))}
+            \PYGemacs{k}{end do}
+\PYGemacs{k}{        end do}
+
+\PYGemacs{k}{    end subroutine }\PYGemacs{n}{TMatrix}
+
+    \PYGemacs{k}{function }\PYGemacs{n}{normalPdf}\PYGemacs{p}{(}\PYGemacs{n}{x}\PYGemacs{p}{,} \PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{n}{sigma\PYGemacsZus{}inv}\PYGemacs{p}{,} \PYGemacs{n}{denom}\PYGemacs{p}{)}
+        \PYGemacs{c}{!! Multivariate Gaussian probability density function}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(:)} \PYGemacs{k+kd}{::} \PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{n}{x}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(:,} \PYGemacs{p}{:)} \PYGemacs{k+kd}{::} \PYGemacs{n}{sigma\PYGemacsZus{}inv}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{denom}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{normalPdf}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{mu}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{intermediate}
+        \PYGemacs{n}{intermediate} \PYGemacs{o}{=} \PYGemacs{n+nb}{MATMUL}\PYGemacs{p}{(}\PYGemacs{n}{x} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{n}{sigma\PYGemacsZus{}inv}\PYGemacs{p}{)}
+        \PYGemacs{n}{normalPdf} \PYGemacs{o}{=} \PYGemacs{n+nb}{exp}\PYGemacs{p}{(}\PYGemacs{o}{\PYGemacsZhy{}}\PYGemacs{l+m+mf}{0.5}\PYGemacs{o}{*}\PYGemacs{n+nb}{DOT\PYGemacsZus{}PRODUCT}\PYGemacs{p}{(}\PYGemacs{n}{intermediate}\PYGemacs{p}{,} \PYGemacs{n}{x} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{mu}\PYGemacs{p}{))}\PYGemacs{o}{/}\PYGemacs{n}{denom}
+    \PYGemacs{k}{end function }\PYGemacs{n}{normalPdf}
+
+
+    \PYGemacs{k}{subroutine }\PYGemacs{n}{sigma\PYGemacsZus{}update}\PYGemacs{p}{(}\PYGemacs{n}{datapoints}\PYGemacs{p}{,} \PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{n}{expectation}\PYGemacs{p}{,} \PYGemacs{n}{sigma}\PYGemacs{p}{)}
+        \PYGemacs{c}{!! Computes the updated covariance matricies using the EM algorithm.}
+        \PYGemacs{k+kt}{integer }\PYGemacs{n}{nk}\PYGemacs{p}{,} \PYGemacs{n}{nPoints}\PYGemacs{p}{,} \PYGemacs{n}{nDims}\PYGemacs{p}{,} \PYGemacs{n}{k}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{j}\PYGemacs{p}{,} \PYGemacs{n}{m}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(:,} \PYGemacs{p}{:)} \PYGemacs{k+kd}{::} \PYGemacs{n}{datapoints}\PYGemacs{p}{,} \PYGemacs{n}{expectation}\PYGemacs{p}{,} \PYGemacs{n}{mu}
+        \PYGemacs{c}{!f2py depend(mu) sigma}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{out}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{2}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{2}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{sigma}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{datapoints}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{2}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{2}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{sum\PYGemacsZus{}terms}
+
+        \PYGemacs{n}{nk} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{)}
+        \PYGemacs{n}{nDims} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{mu}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{2}\PYGemacs{p}{)}
+        \PYGemacs{n}{nPoints} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{datapoints}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{)}
+
+        \PYGemacs{k}{do }\PYGemacs{n}{k}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,}\PYGemacs{n}{nk}
+            \PYGemacs{k}{do }\PYGemacs{n}{i}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,}\PYGemacs{n}{nDims}
+                \PYGemacs{k}{do }\PYGemacs{n}{j}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,}\PYGemacs{n}{nDims}
+                    \PYGemacs{k}{do }\PYGemacs{n}{m}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,}\PYGemacs{n}{nPoints}
+                        \PYGemacs{n}{sum\PYGemacsZus{}terms}\PYGemacs{p}{(}\PYGemacs{n}{m}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{j}\PYGemacs{p}{)} \PYGemacs{o}{=} \PYGemacs{n}{expectation}\PYGemacs{p}{(}\PYGemacs{n}{m}\PYGemacs{p}{,} \PYGemacs{n}{k}\PYGemacs{p}{)}\PYGemacs{o}{*}\PYGemacs{p}{(}\PYGemacs{n}{datapoints}\PYGemacs{p}{(}\PYGemacs{n}{m}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{p}{)} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{mu}\PYGemacs{p}{(}\PYGemacs{n}{k}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{p}{))}\PYGemacs{o}{*}\PYGemacs{p}{(}\PYGemacs{n}{datapoints}\PYGemacs{p}{(}\PYGemacs{n}{m}\PYGemacs{p}{,} \PYGemacs{n}{j}\PYGemacs{p}{)} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{mu}\PYGemacs{p}{(}\PYGemacs{n}{k} \PYGemacs{p}{,} \PYGemacs{n}{j}\PYGemacs{p}{))}
+                    \PYGemacs{k}{end do}
+\PYGemacs{k}{                end do}
+\PYGemacs{k}{            end do}
+\PYGemacs{k}{            }\PYGemacs{n}{sigma}\PYGemacs{p}{(}\PYGemacs{n}{k}\PYGemacs{p}{,} \PYGemacs{p}{:,} \PYGemacs{p}{:)} \PYGemacs{o}{=} \PYGemacs{l+m+mf}{1.}\PYGemacs{n}{d0}\PYGemacs{o}{/}\PYGemacs{n+nb}{SUM}\PYGemacs{p}{(}\PYGemacs{n}{expectation}\PYGemacs{p}{(:,} \PYGemacs{n}{k}\PYGemacs{p}{))} \PYGemacs{o}{*} \PYGemacs{n+nb}{SUM}\PYGemacs{p}{(}\PYGemacs{n}{sum\PYGemacsZus{}terms}\PYGemacs{p}{,} \PYGemacs{n+nb}{dim}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{)}
+        \PYGemacs{k}{end do}
+
+\PYGemacs{k}{    end subroutine}
+
+\PYGemacs{k}{    subroutine }\PYGemacs{n}{kernal}\PYGemacs{p}{(}\PYGemacs{n}{xN}\PYGemacs{p}{,} \PYGemacs{n}{yN}\PYGemacs{p}{,} \PYGemacs{n}{xT}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{,} \PYGemacs{n}{muT}\PYGemacs{p}{,} \PYGemacs{n}{sigmaT}\PYGemacs{p}{)}
+        \PYGemacs{c}{!!}
+        \PYGemacs{c}{!! Computes the mean and covariance matrix for a Gaussian process with our periodic kernal function.}
+        \PYGemacs{c}{!!}
+        \PYGemacs{c}{!!NOTATION:}
+        \PYGemacs{c}{!! y\PYGemacsZus{}i = f(x\PYGemacsZus{}i) + e\PYGemacsZus{}i}
+        \PYGemacs{c}{!!}
+        \PYGemacs{c}{!!IN:}
+        \PYGemacs{c}{!!      xN : array (N)    \PYGemacsZhy{}\PYGemacsZgt{} x values of the points we are regressing.}
+        \PYGemacs{c}{!!      yN : array (N)    \PYGemacsZhy{}\PYGemacsZgt{} y values of the points we are regressing.}
+        \PYGemacs{c}{!!      xT : array (t)    \PYGemacsZhy{}\PYGemacsZgt{} x values of the points whose population parameters we are computing.}
+        \PYGemacs{c}{!!     std : +ve real     \PYGemacsZhy{}\PYGemacsZgt{} Standard deviation of e\PYGemacsZus{}i.}
+        \PYGemacs{c}{!!  period : real         \PYGemacsZhy{}\PYGemacsZgt{} Parameter determining period of the sinusoidal kernal.}
+        \PYGemacs{c}{!!  lambda : real         \PYGemacsZhy{}\PYGemacsZgt{} Length scales of the squared exponential kernal.}
+        \PYGemacs{c}{!!  var\PYGemacsZus{}se : real         \PYGemacsZhy{}\PYGemacsZgt{} Contribution of the squared exponential kernal to covariance.}
+        \PYGemacs{c}{!! var\PYGemacsZus{}sin : real         \PYGemacsZhy{}\PYGemacsZgt{} Contribution of the sinusoidal kernal to covariance.}
+        \PYGemacs{c}{!!}
+        \PYGemacs{c}{!!OUT:}
+        \PYGemacs{c}{!!     muT : array (T)    \PYGemacsZhy{}\PYGemacsZgt{} Mean of the y\PYGemacsZus{}i for the xT}
+        \PYGemacs{c}{!!  sigmaT : array (T, T) \PYGemacsZhy{}\PYGemacsZgt{} Covariance matrix of the y\PYGemacsZus{}i for the xT}
+
+        \PYGemacs{k}{implicit none}
+\PYGemacs{k}{        }\PYGemacs{k+kt}{integer} \PYGemacs{k+kd}{::} \PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{N}\PYGemacs{p}{,} \PYGemacs{n}{T}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(:)} \PYGemacs{k+kd}{::} \PYGemacs{n}{xN}\PYGemacs{p}{,} \PYGemacs{n}{yN}\PYGemacs{p}{,} \PYGemacs{n}{xT}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{out}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{muT}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{out}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{sigmaT}
+
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{KT}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xN}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xN}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{KN}\PYGemacs{p}{,} \PYGemacs{n}{KN\PYGemacsZus{}edited}\PYGemacs{p}{,} \PYGemacs{n}{KN\PYGemacsZus{}inv}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xN}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{KNT}
+
+        \PYGemacs{n}{N} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xN}\PYGemacs{p}{)}
+        \PYGemacs{n}{T} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{)}
+
+        \PYGemacs{n}{KN} \PYGemacs{o}{=} \PYGemacs{n}{K\PYGemacsZus{}matrix}\PYGemacs{p}{(}\PYGemacs{n}{xN}\PYGemacs{p}{,} \PYGemacs{n}{xN}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{)}
+        \PYGemacs{n}{KT} \PYGemacs{o}{=} \PYGemacs{n}{K\PYGemacsZus{}matrix}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{,} \PYGemacs{n}{xT}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{)}
+        \PYGemacs{n}{KNT} \PYGemacs{o}{=} \PYGemacs{n}{K\PYGemacsZus{}matrix}\PYGemacs{p}{(}\PYGemacs{n}{xN}\PYGemacs{p}{,} \PYGemacs{n}{xT}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{)}
+
+        \PYGemacs{n}{KN\PYGemacsZus{}edited} \PYGemacs{o}{=} \PYGemacs{n}{KN}
+        \PYGemacs{k}{do }\PYGemacs{n}{i}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,}\PYGemacs{n}{N}
+            \PYGemacs{n}{KN\PYGemacsZus{}edited}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{p}{)} \PYGemacs{o}{=} \PYGemacs{n}{KN\PYGemacsZus{}edited}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{p}{)} \PYGemacs{o}{+} \PYGemacs{n}{std}\PYGemacs{o}{*}\PYGemacs{n}{std}
+        \PYGemacs{k}{end do}
+
+\PYGemacs{k}{        }\PYGemacs{n}{KN\PYGemacsZus{}inv} \PYGemacs{o}{=} \PYGemacs{n}{inv}\PYGemacs{p}{(}\PYGemacs{n}{KN\PYGemacsZus{}edited}\PYGemacs{p}{)}
+
+        \PYGemacs{n}{muT} \PYGemacs{o}{=} \PYGemacs{n+nb}{MATMUL}\PYGemacs{p}{(}\PYGemacs{n+nb}{MATMUL}\PYGemacs{p}{(}\PYGemacs{n+nb}{TRANSPOSE}\PYGemacs{p}{(}\PYGemacs{n}{KNT}\PYGemacs{p}{),} \PYGemacs{n}{KN\PYGemacsZus{}inv}\PYGemacs{p}{),} \PYGemacs{n}{yN}\PYGemacs{p}{)}
+        \PYGemacs{n}{sigmaT} \PYGemacs{o}{=} \PYGemacs{n}{KT} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n+nb}{MATMUL}\PYGemacs{p}{(}\PYGemacs{n+nb}{TRANSPOSE}\PYGemacs{p}{(}\PYGemacs{n}{KNT}\PYGemacs{p}{),} \PYGemacs{n+nb}{MATMUL}\PYGemacs{p}{(}\PYGemacs{n}{KN\PYGemacsZus{}inv}\PYGemacs{p}{,} \PYGemacs{n}{KNT}\PYGemacs{p}{))}
+
+    \PYGemacs{k}{end subroutine }\PYGemacs{n}{kernal}
+
+    \PYGemacs{k}{subroutine }\PYGemacs{n}{kernal\PYGemacsZus{}simple}\PYGemacs{p}{(}\PYGemacs{n}{xN}\PYGemacs{p}{,} \PYGemacs{n}{yN}\PYGemacs{p}{,} \PYGemacs{n}{xT}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{muT}\PYGemacs{p}{,} \PYGemacs{n}{sigmaT}\PYGemacs{p}{)}
+        \PYGemacs{c}{!! Identical to the kernal subroutine but using a non\PYGemacsZhy{}periodic kernal}
+        \PYGemacs{k}{implicit none}
+\PYGemacs{k}{        }\PYGemacs{k+kt}{integer} \PYGemacs{k+kd}{::} \PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{N}\PYGemacs{p}{,} \PYGemacs{n}{T}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(:)} \PYGemacs{k+kd}{::} \PYGemacs{n}{xN}\PYGemacs{p}{,} \PYGemacs{n}{yN}\PYGemacs{p}{,} \PYGemacs{n}{xT}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{out}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{muT}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{out}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{sigmaT}
+
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{KT}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xN}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xN}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{KN}\PYGemacs{p}{,} \PYGemacs{n}{KN\PYGemacsZus{}edited}\PYGemacs{p}{,} \PYGemacs{n}{KN\PYGemacsZus{}inv}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xN}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{KNT}
+
+        \PYGemacs{n}{N} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xN}\PYGemacs{p}{)}
+        \PYGemacs{n}{T} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{)}
+
+        \PYGemacs{n}{KN} \PYGemacs{o}{=} \PYGemacs{n}{K\PYGemacsZus{}matrix\PYGemacsZus{}simple}\PYGemacs{p}{(}\PYGemacs{n}{xN}\PYGemacs{p}{,} \PYGemacs{n}{xN}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{)}
+        \PYGemacs{n}{KT} \PYGemacs{o}{=} \PYGemacs{n}{K\PYGemacsZus{}matrix\PYGemacsZus{}simple}\PYGemacs{p}{(}\PYGemacs{n}{xT}\PYGemacs{p}{,} \PYGemacs{n}{xT}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{)}
+        \PYGemacs{n}{KNT} \PYGemacs{o}{=} \PYGemacs{n}{K\PYGemacsZus{}matrix\PYGemacsZus{}simple}\PYGemacs{p}{(}\PYGemacs{n}{xN}\PYGemacs{p}{,} \PYGemacs{n}{xT}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{)}
+
+        \PYGemacs{n}{KN\PYGemacsZus{}edited} \PYGemacs{o}{=} \PYGemacs{n}{KN}
+        \PYGemacs{k}{do }\PYGemacs{n}{i}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,}\PYGemacs{n}{N}
+            \PYGemacs{n}{KN\PYGemacsZus{}edited}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{p}{)} \PYGemacs{o}{=} \PYGemacs{n}{KN\PYGemacsZus{}edited}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{p}{)} \PYGemacs{o}{+} \PYGemacs{n}{std}\PYGemacs{o}{*}\PYGemacs{n}{std}
+        \PYGemacs{k}{end do}
+
+\PYGemacs{k}{        }\PYGemacs{n}{KN\PYGemacsZus{}inv} \PYGemacs{o}{=} \PYGemacs{n}{inv}\PYGemacs{p}{(}\PYGemacs{n}{KN\PYGemacsZus{}edited}\PYGemacs{p}{)}
+
+        \PYGemacs{n}{muT} \PYGemacs{o}{=} \PYGemacs{n+nb}{MATMUL}\PYGemacs{p}{(}\PYGemacs{n+nb}{MATMUL}\PYGemacs{p}{(}\PYGemacs{n+nb}{TRANSPOSE}\PYGemacs{p}{(}\PYGemacs{n}{KNT}\PYGemacs{p}{),} \PYGemacs{n}{KN\PYGemacsZus{}inv}\PYGemacs{p}{),} \PYGemacs{n}{yN}\PYGemacs{p}{)}
+        \PYGemacs{n}{sigmaT} \PYGemacs{o}{=} \PYGemacs{n}{KT} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n+nb}{MATMUL}\PYGemacs{p}{(}\PYGemacs{n+nb}{TRANSPOSE}\PYGemacs{p}{(}\PYGemacs{n}{KNT}\PYGemacs{p}{),} \PYGemacs{n+nb}{MATMUL}\PYGemacs{p}{(}\PYGemacs{n}{KN\PYGemacsZus{}inv}\PYGemacs{p}{,} \PYGemacs{n}{KNT}\PYGemacs{p}{))}
+
+    \PYGemacs{k}{end subroutine }\PYGemacs{n}{kernal\PYGemacsZus{}simple}
+
+    \PYGemacs{k}{function }\PYGemacs{n}{K\PYGemacsZus{}matrix}\PYGemacs{p}{(}\PYGemacs{n}{points1}\PYGemacs{p}{,} \PYGemacs{n}{points2}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{)}
+        \PYGemacs{c}{!! Covariance matrix of the period kernal for the given points}
+        \PYGemacs{k}{implicit none}
+\PYGemacs{k}{        }\PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(:)} \PYGemacs{k+kd}{::} \PYGemacs{n}{points1}\PYGemacs{p}{,} \PYGemacs{n}{points2}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{points1}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{points2}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{K\PYGemacsZus{}matrix}
+        \PYGemacs{c}{!f2py depend(points1, points2) K\PYGemacsZus{}matrix}
+        \PYGemacs{k+kt}{integer} \PYGemacs{k+kd}{::} \PYGemacs{n}{N1}\PYGemacs{p}{,} \PYGemacs{n}{N2}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{j}
+        \PYGemacs{n}{N1} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{points1}\PYGemacs{p}{)}
+        \PYGemacs{n}{N2} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{points2}\PYGemacs{p}{)}
+
+        \PYGemacs{k}{do }\PYGemacs{n}{i}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,}\PYGemacs{n}{N1}
+            \PYGemacs{k}{do }\PYGemacs{n}{j}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,}\PYGemacs{n}{N2}
+                \PYGemacs{n}{K\PYGemacsZus{}matrix}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{j}\PYGemacs{p}{)} \PYGemacs{o}{=} \PYGemacs{n}{comb\PYGemacsZus{}cov}\PYGemacs{p}{(}\PYGemacs{n}{points1}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{),} \PYGemacs{n}{points2}\PYGemacs{p}{(}\PYGemacs{n}{j}\PYGemacs{p}{),} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{)}
+            \PYGemacs{k}{end do}
+\PYGemacs{k}{        end do}
+
+\PYGemacs{k}{    end function }\PYGemacs{n}{K\PYGemacsZus{}matrix}
+
+
+    \PYGemacs{k}{function }\PYGemacs{n}{K\PYGemacsZus{}matrix\PYGemacsZus{}simple}\PYGemacs{p}{(}\PYGemacs{n}{points1}\PYGemacs{p}{,} \PYGemacs{n}{points2}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{)}
+        \PYGemacs{c}{!! Identical to the K\PYGemacsZus{}matrix subroutine but with non\PYGemacsZhy{}periodic kernal.}
+        \PYGemacs{k}{implicit none}
+\PYGemacs{k}{        }\PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(:)} \PYGemacs{k+kd}{::} \PYGemacs{n}{points1}\PYGemacs{p}{,} \PYGemacs{n}{points2}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{points1}\PYGemacs{p}{),} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{points2}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{K\PYGemacsZus{}matrix\PYGemacsZus{}simple}
+        \PYGemacs{c}{!f2py depend(points1, points2) K\PYGemacsZus{}matrix\PYGemacsZus{}simple}
+        \PYGemacs{k+kt}{integer} \PYGemacs{k+kd}{::} \PYGemacs{n}{N1}\PYGemacs{p}{,} \PYGemacs{n}{N2}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{j}
+        \PYGemacs{n}{N1} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{points1}\PYGemacs{p}{)}
+        \PYGemacs{n}{N2} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{points2}\PYGemacs{p}{)}
+
+        \PYGemacs{k}{do }\PYGemacs{n}{i}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,}\PYGemacs{n}{N1}
+            \PYGemacs{k}{do }\PYGemacs{n}{j}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,}\PYGemacs{n}{N2}
+                \PYGemacs{n}{K\PYGemacsZus{}matrix\PYGemacsZus{}simple}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{j}\PYGemacs{p}{)} \PYGemacs{o}{=} \PYGemacs{n}{se\PYGemacsZus{}cov}\PYGemacs{p}{(}\PYGemacs{n}{points1}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{),} \PYGemacs{n}{points2}\PYGemacs{p}{(}\PYGemacs{n}{j}\PYGemacs{p}{),}  \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{)}
+            \PYGemacs{k}{end do}
+\PYGemacs{k}{        end do}
+
+\PYGemacs{k}{    end function }\PYGemacs{n}{K\PYGemacsZus{}matrix\PYGemacsZus{}simple}
+
+
+    \PYGemacs{k}{function }\PYGemacs{n}{se\PYGemacsZus{}cov}\PYGemacs{p}{(}\PYGemacs{n}{point1}\PYGemacs{p}{,} \PYGemacs{n}{point2}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{)}
+        \PYGemacs{c}{!! Squared exponential kernal function.}
+        \PYGemacs{k}{implicit none}
+\PYGemacs{k}{        }\PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{point1}\PYGemacs{p}{,} \PYGemacs{n}{point2}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{se\PYGemacsZus{}cov}
+        \PYGemacs{n}{se\PYGemacsZus{}cov} \PYGemacs{o}{=} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{o}{*}\PYGemacs{n+nb}{exp}\PYGemacs{p}{(}\PYGemacs{o}{\PYGemacsZhy{}}\PYGemacs{l+m+mf}{0.5}\PYGemacs{o}{*}\PYGemacs{p}{((}\PYGemacs{n}{point1} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{point2}\PYGemacs{p}{)}\PYGemacs{o}{/}\PYGemacs{n}{lambda}\PYGemacs{p}{)}\PYGemacs{o}{*}\PYGemacs{p}{((}\PYGemacs{n}{point1} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{point2}\PYGemacs{p}{)}\PYGemacs{o}{/}\PYGemacs{n}{lambda}\PYGemacs{p}{))}
+    \PYGemacs{k}{end function }\PYGemacs{n}{se\PYGemacsZus{}cov}
+
+    \PYGemacs{k}{function }\PYGemacs{n}{sin\PYGemacsZus{}cov}\PYGemacs{p}{(}\PYGemacs{n}{point1}\PYGemacs{p}{,} \PYGemacs{n}{point2}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{)}
+        \PYGemacs{c}{!! Sinusoidal kernal function.}
+        \PYGemacs{k}{implicit none}
+\PYGemacs{k}{        }\PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{point1}\PYGemacs{p}{,} \PYGemacs{n}{point2}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{sin\PYGemacsZus{}cov}
+        \PYGemacs{n}{sin\PYGemacsZus{}cov} \PYGemacs{o}{=} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{o}{*}\PYGemacs{n+nb}{exp}\PYGemacs{p}{(}\PYGemacs{o}{\PYGemacsZhy{}}\PYGemacs{l+m+mi}{2}\PYGemacs{o}{*}\PYGemacs{p}{(}\PYGemacs{n+nb}{sin}\PYGemacs{p}{((}\PYGemacs{n}{point1} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{point2}\PYGemacs{p}{)}\PYGemacs{o}{/}\PYGemacs{n}{period}\PYGemacs{p}{))}\PYGemacs{o}{*}\PYGemacs{p}{(}\PYGemacs{n+nb}{sin}\PYGemacs{p}{((}\PYGemacs{n}{point1} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{point2}\PYGemacs{p}{)}\PYGemacs{o}{/}\PYGemacs{n}{period}\PYGemacs{p}{)))}
+    \PYGemacs{k}{end function }\PYGemacs{n}{sin\PYGemacsZus{}cov}
+
+    \PYGemacs{k}{function }\PYGemacs{n}{comb\PYGemacsZus{}cov}\PYGemacs{p}{(}\PYGemacs{n}{point1}\PYGemacs{p}{,} \PYGemacs{n}{point2}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{)}
+        \PYGemacs{c}{!! Kernal function combining the squared exponential and sinusoidal kernals}
+        \PYGemacs{k}{implicit none}
+\PYGemacs{k}{        }\PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{point1}\PYGemacs{p}{,} \PYGemacs{n}{point2}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{comb\PYGemacsZus{}cov}
+        \PYGemacs{n}{comb\PYGemacsZus{}cov} \PYGemacs{o}{=} \PYGemacs{n}{sin\PYGemacsZus{}cov}\PYGemacs{p}{(}\PYGemacs{n}{point1}\PYGemacs{p}{,} \PYGemacs{n}{point2}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{)} \PYGemacs{o}{+} \PYGemacs{n}{se\PYGemacsZus{}cov}\PYGemacs{p}{(}\PYGemacs{n}{point1}\PYGemacs{p}{,} \PYGemacs{n}{point2}\PYGemacs{p}{,} \PYGemacs{n}{lambda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{)}
+    \PYGemacs{k}{end function }\PYGemacs{n}{comb\PYGemacsZus{}cov}
+
+
+    \PYGemacs{c}{! This function is taken from: http://fortranwiki.org/fortran/show/Matrix+inversion}
+    \PYGemacs{c}{! Returns the inverse of a matrix calculated by finding the LU}
+    \PYGemacs{c}{! decomposition.  Depends on LAPACK.}
+    \PYGemacs{k}{function }\PYGemacs{n}{inv}\PYGemacs{p}{(}\PYGemacs{n}{A}\PYGemacs{p}{)} \PYGemacs{k}{result}\PYGemacs{p}{(}\PYGemacs{n}{Ainv}\PYGemacs{p}{)}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(:,:),} \PYGemacs{k}{intent}\PYGemacs{p}{(}\PYGemacs{n}{in}\PYGemacs{p}{)} \PYGemacs{k+kd}{::} \PYGemacs{n}{A}
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{A}\PYGemacs{p}{,}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{),}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{A}\PYGemacs{p}{,}\PYGemacs{l+m+mi}{2}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{Ainv}
+
+        \PYGemacs{k+kt}{real}\PYGemacs{p}{(}\PYGemacs{n+nb}{kind}\PYGemacs{o}{=}\PYGemacs{l+m+mi}{8}\PYGemacs{p}{),} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{A}\PYGemacs{p}{,}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{work}  \PYGemacs{c}{! work array for LAPACK}
+        \PYGemacs{k+kt}{integer}\PYGemacs{p}{,} \PYGemacs{k}{dimension}\PYGemacs{p}{(}\PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{A}\PYGemacs{p}{,}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{))} \PYGemacs{k+kd}{::} \PYGemacs{n}{ipiv}   \PYGemacs{c}{! pivot indices}
+        \PYGemacs{k+kt}{integer} \PYGemacs{k+kd}{::} \PYGemacs{n}{n}\PYGemacs{p}{,} \PYGemacs{n}{info}
+
+        \PYGemacs{c}{! External procedures defined in LAPACK}
+        \PYGemacs{k}{external }\PYGemacs{n}{DGETRF}
+        \PYGemacs{k}{external }\PYGemacs{n}{DGETRI}
+
+        \PYGemacs{c}{! Store A in Ainv to prevent it from being overwritten by LAPACK}
+        \PYGemacs{n}{Ainv} \PYGemacs{o}{=} \PYGemacs{n}{A}
+        \PYGemacs{n}{n} \PYGemacs{o}{=} \PYGemacs{n}{size}\PYGemacs{p}{(}\PYGemacs{n}{A}\PYGemacs{p}{,}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{)}
+
+        \PYGemacs{c}{! DGETRF computes an LU factorization of a general M\PYGemacsZhy{}by\PYGemacsZhy{}N matrix A}
+        \PYGemacs{c}{! using partial pivoting with row interchanges.}
+        \PYGemacs{k}{call }\PYGemacs{n}{DGETRF}\PYGemacs{p}{(}\PYGemacs{n}{n}\PYGemacs{p}{,} \PYGemacs{n}{n}\PYGemacs{p}{,} \PYGemacs{n}{Ainv}\PYGemacs{p}{,} \PYGemacs{n}{n}\PYGemacs{p}{,} \PYGemacs{n}{ipiv}\PYGemacs{p}{,} \PYGemacs{n}{info}\PYGemacs{p}{)}
+
+        \PYGemacs{k}{if} \PYGemacs{p}{(}\PYGemacs{n}{info} \PYGemacs{o}{/=} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{)} \PYGemacs{k}{then}
+\PYGemacs{k}{           stop} \PYGemacs{l+s+s1}{\PYGemacsZsq{}Matrix is numerically singular!\PYGemacsZsq{}}
+        \PYGemacs{k}{end if}
+
+        \PYGemacs{c}{! DGETRI computes the inverse of a matrix using the LU factorization}
+        \PYGemacs{c}{! computed by DGETRF.}
+        \PYGemacs{k}{call }\PYGemacs{n}{DGETRI}\PYGemacs{p}{(}\PYGemacs{n}{n}\PYGemacs{p}{,} \PYGemacs{n}{Ainv}\PYGemacs{p}{,} \PYGemacs{n}{n}\PYGemacs{p}{,} \PYGemacs{n}{ipiv}\PYGemacs{p}{,} \PYGemacs{n}{work}\PYGemacs{p}{,} \PYGemacs{n}{n}\PYGemacs{p}{,} \PYGemacs{n}{info}\PYGemacs{p}{)}
+
+        \PYGemacs{k}{if} \PYGemacs{p}{(}\PYGemacs{n}{info} \PYGemacs{o}{/=} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{)} \PYGemacs{k}{then}
+\PYGemacs{k}{           stop} \PYGemacs{l+s+s1}{\PYGemacsZsq{}Matrix inversion failed!\PYGemacsZsq{}}
+        \PYGemacs{k}{end if}
+\PYGemacs{k}{    end function }\PYGemacs{n}{inv}
+
+\PYGemacs{k}{end module }\PYGemacs{n}{cluster}
+\end{Verbatim}

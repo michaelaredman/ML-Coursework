@@ -27,12 +27,6 @@ def neg_log_likelihood(y, period, lmbda, var_se, var_sin, std):
     term3 = 0.5*len(y)*np.log(2*np.pi)
     return term1 + term2 + term3
 
-helper = lambda period,lmbda, var_se, var_sin, std : neg_log_likelihood(co2, period, lmbda, var_se, var_sin, std)
-#mins = minimize(lambda x: helper(*x), x0=[1, 1, 1, 1, 1], method='BFGS')
-
-lmbda_opt = 0.118
-sigma_opt = 8.7e-09
-
 extra = np.arange(431.5, 600)
 
 thing = cl.kernal(months, co2, extra, 2.7e-01, 1.09, 3.05e03, 3.0e03, 2.0e3)
@@ -46,7 +40,8 @@ def plotter(period, lmbda, var_se, var_sin, std):
     plt.savefig(file)
     plt.close()
 
-std = 0.75
+#the following code will find the maximizing parameters for a given value of std and the plots
+std = 0.70
 helper2 = lambda lmbda, var_se, var_sin : neg_log_likelihood(co2, 3.81, lmbda, var_se, var_sin, std)
 find_mins = minimize(lambda x: helper2(*x), x0=[1, 1, 1], method='BFGS')
 mins = find_mins['x']
@@ -56,8 +51,8 @@ ker = cl.kernal(months,  co2, extra, std, 3.81, *mins)
 
 mu = ker[0]
 sd = np.diagonal(ker[1])
-plt.plot(months, co2)
-plt.fill_between(extra, mu - sd, mu + sd, color='red')
-file = 'spread{}.png'.format(time.clock())
-plt.savefig(file)
-plt.close()
+plt.plot(months, co2 + co2_unnorm.mean())
+plt.fill_between(extra, mu + co2_unnorm.mean() - sd, mu + co2_unnorm.mean() + sd, color='red')
+#file = 'spread{}.png'.format(time.clock())
+#plt.savefig(file)
+#plt.close()

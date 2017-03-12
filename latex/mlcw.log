@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.11.4)  11 MAR 2017 16:42
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.11.4)  12 MAR 2017 14:40
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -1060,18 +1060,18 @@ Package: trimspaces 2009/09/17 v1.1 Trim spaces around a token list
 (./_minted-mlcw/emacs.pygstyle) (./mlcw.aux)
 \openout1 = `mlcw.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for U/mathx/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for U/mathx/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: subfig package v1.3 is loaded.
 Package caption Info: float package is loaded.
@@ -1146,47 +1146,252 @@ e
 
 ABD: EveryShipout initializing macros
 \c@lstlisting=\count175
-LaTeX Font Info:    Try loading font information for U+msa on input line 38.
+LaTeX Font Info:    Try loading font information for U+msa on input line 36.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 38.
+LaTeX Font Info:    Try loading font information for U+msb on input line 36.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [1
 
-{/usr/local/texlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2] [3]
- (./mlcw.aux) ) 
+{/usr/local/texlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+<images/original.jpg, id=23, 642.4pt x 642.4pt>
+File: images/original.jpg Graphic file (type jpg)
+ <use images/original.jpg>
+Package pdftex.def Info: images/original.jpg used on input line 77.
+(pdftex.def)             Requested size: 152.27682pt x 152.27751pt.
+
+<images/km2.png, id=24, 642.4pt x 642.4pt>
+File: images/km2.png Graphic file (type png)
+ <use images/km2.png>
+Package pdftex.def Info: images/km2.png used on input line 85.
+(pdftex.def)             Requested size: 121.8261pt x 121.822pt.
+
+<images/km3.png, id=26, 642.4pt x 642.4pt>
+File: images/km3.png Graphic file (type png)
+ <use images/km3.png>
+Package pdftex.def Info: images/km3.png used on input line 91.
+(pdftex.def)             Requested size: 121.8261pt x 121.822pt.
+
+<images/km4.png, id=27, 642.4pt x 642.4pt>
+File: images/km4.png Graphic file (type png)
+ <use images/km4.png>
+Package pdftex.def Info: images/km4.png used on input line 97.
+(pdftex.def)             Requested size: 121.8261pt x 121.822pt.
+
+<images/gmm2.png, id=28, 642.4pt x 642.4pt>
+File: images/gmm2.png Graphic file (type png)
+ <use images/gmm2.png>
+Package pdftex.def Info: images/gmm2.png used on input line 107.
+(pdftex.def)             Requested size: 121.8261pt x 121.822pt.
+
+<images/gmm3.png, id=29, 642.4pt x 642.4pt>
+File: images/gmm3.png Graphic file (type png)
+ <use images/gmm3.png>
+Package pdftex.def Info: images/gmm3.png used on input line 113.
+(pdftex.def)             Requested size: 121.8261pt x 121.822pt.
+
+<images/gmm4.png, id=30, 642.4pt x 642.4pt>
+File: images/gmm4.png Graphic file (type png)
+ <use images/gmm4.png>
+Package pdftex.def Info: images/gmm4.png used on input line 119.
+(pdftex.def)             Requested size: 121.8261pt x 121.822pt.
+
+<images/mixmu.png, id=31, 839.7774pt x 604.1772pt>
+File: images/mixmu.png Graphic file (type png)
+ <use images/mixmu.png>
+Package pdftex.def Info: images/mixmu.png used on input line 129.
+(pdftex.def)             Requested size: 180.8309pt x 130.09837pt.
+
+<images/kvals.png, id=32, 828.2142pt x 613.5723pt>
+File: images/kvals.png Graphic file (type png)
+ <use images/kvals.png>
+Package pdftex.def Info: images/kvals.png used on input line 135.
+(pdftex.def)             Requested size: 180.8309pt x 133.96582pt.
+
+[2] [3 <./images/original.jpg> <./images/km2.png> <./images/km3.png> <./images/
+km4.png> <./images/gmm2.png> <./images/gmm3.png> <./images/gmm4.png>]
+./mlcw.tex:190: Extra }, or forgotten \right.
+l.190 ...2\left(\frac{x - x^*}{3.81}\left)\right)}
+                                                  
+I've deleted a group-closing symbol because it seems to be
+spurious, as in `$x}$'. But perhaps the } is legitimate and
+you forgot something else, as in `\hbox{$x}'. In such cases
+the way to recover is to insert both the forgotten and the
+deleted material, e.g., by typing `I$}'.
+
+./mlcw.tex:191: You can't use `\eqno' in math mode.
+\endmathdisplay@a ...\df@tag \@empty \else \veqno 
+                                                  \alt@tag \df@tag \fi \ifx ...
+l.191 \end{equation}
+                    
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+./mlcw.tex:191: Missing \right. inserted.
+<inserted text> 
+                \right .
+l.191 \end{equation}
+                    
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+./mlcw.tex:191: Missing \right. inserted.
+<inserted text> 
+                \right .
+l.191 \end{equation}
+                    
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+./mlcw.tex:191: Missing } inserted.
+<inserted text> 
+                }
+l.191 \end{equation}
+                    
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+[4] <images/std70.png, id=49, 712.5822pt x 557.9244pt>
+File: images/std70.png Graphic file (type png)
+ <use images/std70.png>
+Package pdftex.def Info: images/std70.png used on input line 219.
+(pdftex.def)             Requested size: 190.34894pt x 149.0326pt.
+
+<images/std75.png, id=50, 706.0779pt x 531.9072pt>
+File: images/std75.png Graphic file (type png)
+ <use images/std75.png>
+Package pdftex.def Info: images/std75.png used on input line 225.
+(pdftex.def)             Requested size: 190.34894pt x 143.3896pt.
+
+[5] [6 <./images/mixmu.png> <./images/kvals.png> <./images/std70.png> <./images
+/std75.png>] [7]
+Overfull \hbox (19.99731pt too wide) in paragraph at lines 257--258
+\OT1/cmr/m/n/10 The project as a whole can be found at https://github.com/micha
+elaredman/ML-Coursework
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 257--258
+
+ []
+
+\openout4 = `mlcw.pyg'.
+
+runsystem(pygmentize -l python -f latex -F tokenmerge -P style=default -P comma
+ndprefix=PYGdefault -P style=emacs -P commandprefix=PYGemacs -o "_minted-mlcw/4
+6D1A55383BECB23D7215509E399304DDD02FB9DE35B4DD5299F3E435628DE8D.pygtex" "mlcw.p
+yg" )...executed.
+
+
+(./_minted-mlcw/46D1A55383BECB23D7215509E399304DDD02FB9DE35B4DD5299F3E435628DE8
+D.pygtex
+LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10> not available
+(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 2.
+ [8])
+\openout4 = `mlcw.pyg'.
+
+runsystem(pygmentize -l python -f latex -F tokenmerge -P style=default -P comma
+ndprefix=PYGdefault -P style=emacs -P commandprefix=PYGemacs -o "_minted-mlcw/2
+18FAC3D3943815DAC7EACE306DEC767DD02FB9DE35B4DD5299F3E435628DE8D.pygtex" "mlcw.p
+yg" )...executed.
+
+
+(./_minted-mlcw/218FAC3D3943815DAC7EACE306DEC767DD02FB9DE35B4DD5299F3E435628DE8
+D.pygtex [9])
+\openout4 = `mlcw.pyg'.
+
+runsystem(pygmentize -l python -f latex -F tokenmerge -P style=default -P comma
+ndprefix=PYGdefault -P style=emacs -P commandprefix=PYGemacs -o "_minted-mlcw/B
+529D6E04DDDCA5B738D39341A940344DD02FB9DE35B4DD5299F3E435628DE8D.pygtex" "mlcw.p
+yg" )...executed.
+
+
+(./_minted-mlcw/B529D6E04DDDCA5B738D39341A940344DD02FB9DE35B4DD5299F3E435628DE8
+D.pygtex [10] [11])
+\openout4 = `mlcw.pyg'.
+
+runsystem(pygmentize -l python -f latex -F tokenmerge -P style=default -P comma
+ndprefix=PYGdefault -P style=emacs -P commandprefix=PYGemacs -o "_minted-mlcw/A
+F55A8D4302705B0A2F62B4468FAC9E7DD02FB9DE35B4DD5299F3E435628DE8D.pygtex" "mlcw.p
+yg" )...executed.
+
+
+(./_minted-mlcw/AF55A8D4302705B0A2F62B4468FAC9E7DD02FB9DE35B4DD5299F3E435628DE8
+D.pygtex [12] [13] [14] [15])
+\openout4 = `mlcw.pyg'.
+
+runsystem(pygmentize -l bash -f latex -F tokenmerge -P style=default -P command
+prefix=PYGdefault -P style=emacs -P commandprefix=PYGemacs -o "_minted-mlcw/736
+193F95FDE61820E5F46F9007AA453CA2FBF19B3DE1626FC581567C3B0FF86.pygtex" "mlcw.pyg
+" )...executed.
+
+
+(./_minted-mlcw/736193F95FDE61820E5F46F9007AA453CA2FBF19B3DE1626FC581567C3B0FF8
+6.pygtex)
+\openout4 = `mlcw.pyg'.
+
+runsystem(pygmentize -l fortran -f latex -F tokenmerge -P style=default -P comm
+andprefix=PYGdefault -P style=emacs -P commandprefix=PYGemacs -o "_minted-mlcw/
+A89DB29CE64DD105D574D6ECC70E98F0CE2F99D1B8E7FADC147DB738DDE24083.pygtex" "mlcw.
+pyg" )...executed.
+
+
+(./_minted-mlcw/A89DB29CE64DD105D574D6ECC70E98F0CE2F99D1B8E7FADC147DB738DDE2408
+3.pygtex [16] [17] [18] [19] [20])
+runsystem(rm "mlcw.pyg")...executed.
+
+ [21] (./mlcw.aux)
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+ ) 
 Here is how much of TeX's memory you used:
- 19831 strings out of 493089
- 380244 string characters out of 6134842
- 455879 words of memory out of 5000000
- 22918 multiletter control sequences out of 15000+600000
- 18915 words of font info for 67 fonts, out of 8000000 for 9000
+ 19950 strings out of 493089
+ 383762 string characters out of 6134842
+ 460879 words of memory out of 5000000
+ 23002 multiletter control sequences out of 15000+600000
+ 19251 words of font info for 69 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 55i,12n,73p,823b,240s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmbx10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/c
-m/cmbx12.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm
-/cmmi10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmmi7.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-r10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr1
-2.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.
-pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb
-></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></
-usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr
-/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/
-local/texlive/2015/texmf-dist/fonts/type1/public/mathabx-type1/matha10.pfb></us
-r/local/texlive/2015/texmf-dist/fonts/type1/public/mathabx-type1/matha7.pfb></u
-sr/local/texlive/2015/texmf-dist/fonts/type1/public/mathabx-type1/mathx10.pfb><
-/usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.p
-fb>
-Output written on mlcw.pdf (3 pages, 149334 bytes).
+ 55i,11n,73p,1157b,438s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
+></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
+</usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmitt10.pfb>
+</usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
+/usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></u
+sr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr
+/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/l
+ocal/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/loc
+al/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/
+texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/tex
+live/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texliv
+e/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive
+/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/
+2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/local/texlive/2
+015/texmf-dist/fonts/type1/public/mathabx-type1/matha10.pfb></usr/local/texlive
+/2015/texmf-dist/fonts/type1/public/mathabx-type1/matha5.pfb></usr/local/texliv
+e/2015/texmf-dist/fonts/type1/public/mathabx-type1/matha7.pfb></usr/local/texli
+ve/2015/texmf-dist/fonts/type1/public/mathabx-type1/mathb5.pfb></usr/local/texl
+ive/2015/texmf-dist/fonts/type1/public/mathabx-type1/mathx10.pfb></usr/local/te
+xlive/2015/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on mlcw.pdf (21 pages, 1121284 bytes).
 PDF statistics:
- 77 PDF objects out of 1000 (max. 8388607)
- 56 compressed objects within 1 object stream
+ 178 PDF objects out of 1000 (max. 8388607)
+ 112 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
- 13 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 68 words of extra memory for PDF output out of 10000 (max. 10000000)
 

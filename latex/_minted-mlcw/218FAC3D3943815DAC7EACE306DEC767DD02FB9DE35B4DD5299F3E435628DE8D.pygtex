@@ -1,0 +1,60 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{numpy} \PYGemacs{k+kn}{as} \PYGemacs{n+nn}{np}
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{sklearn}
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{time}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{matplotlib} \PYGemacs{k+kn}{import} \PYGemacs{n}{pyplot} \PYGemacs{k}{as} \PYGemacs{n}{plt}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{scipy} \PYGemacs{k+kn}{import} \PYGemacs{n}{misc}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{scipy.optimize} \PYGemacs{k+kn}{import} \PYGemacs{n}{minimize}
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{pandas} \PYGemacs{k+kn}{as} \PYGemacs{n+nn}{pd}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{cluster} \PYGemacs{k+kn}{import} \PYGemacs{n}{cluster} \PYGemacs{k}{as} \PYGemacs{n}{cl}
+
+\PYGemacs{n}{cells\PYGemacsZus{}image} \PYGemacs{o}{=} \PYGemacs{n}{misc}\PYGemacs{o}{.}\PYGemacs{n}{imread}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}../FluorescentCells.jpg\PYGemacsZsq{}}\PYGemacs{p}{)}
+\PYGemacs{n}{cells} \PYGemacs{o}{=} \PYGemacs{n}{cells\PYGemacsZus{}image}\PYGemacs{o}{.}\PYGemacs{n}{reshape}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{640}\PYGemacs{o}{*}\PYGemacs{l+m+mi}{640}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{3}\PYGemacs{p}{)}
+
+\PYGemacs{n}{co2\PYGemacsZus{}data} \PYGemacs{o}{=} \PYGemacs{n}{pd}\PYGemacs{o}{.}\PYGemacs{n}{read\PYGemacsZus{}csv}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}CO2\PYGemacsZus{}Mauna\PYGemacsZus{}Loa\PYGemacsZus{}Data.csv\PYGemacsZsq{}}\PYGemacs{p}{)}
+\PYGemacs{n}{co2\PYGemacsZus{}unnorm} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{(}\PYGemacs{n}{co2\PYGemacsZus{}data}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}co2 ppmv\PYGemacsZsq{}}\PYGemacs{p}{])}
+\PYGemacs{n}{co2} \PYGemacs{o}{=} \PYGemacs{n}{co2\PYGemacsZus{}unnorm} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{co2\PYGemacsZus{}unnorm}\PYGemacs{o}{.}\PYGemacs{n}{mean}\PYGemacs{p}{()}
+\PYGemacs{n}{months} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{(}\PYGemacs{n}{co2\PYGemacsZus{}data}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}months since 1960\PYGemacsZhy{}01\PYGemacsZhy{}01\PYGemacsZsq{}}\PYGemacs{p}{])}
+
+\PYGemacs{k}{def} \PYGemacs{n+nf}{neg\PYGemacsZus{}log\PYGemacsZus{}likelihood}\PYGemacs{p}{(}\PYGemacs{n}{y}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{lmbda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{):}
+    \PYGemacs{n}{C\PYGemacsZus{}theta} \PYGemacs{o}{=} \PYGemacs{n}{cl}\PYGemacs{o}{.}\PYGemacs{n}{k\PYGemacsZus{}matrix}\PYGemacs{p}{(}\PYGemacs{n}{months}\PYGemacs{p}{,} \PYGemacs{n}{months}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{lmbda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{)} \PYGemacs{o}{+} \PYGemacs{n}{std}\PYGemacs{o}{*}\PYGemacs{n}{std}\PYGemacs{o}{*}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{identity}\PYGemacs{p}{(}\PYGemacs{n+nb}{len}\PYGemacs{p}{(}\PYGemacs{n}{months}\PYGemacs{p}{))}
+    \PYGemacs{n}{evals} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{linalg}\PYGemacs{o}{.}\PYGemacs{n}{eigvals}\PYGemacs{p}{(}\PYGemacs{n}{C\PYGemacsZus{}theta}\PYGemacs{p}{)}
+    \PYGemacs{n}{logdetC} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{real}\PYGemacs{p}{(}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{log}\PYGemacs{p}{(}\PYGemacs{n}{evals}\PYGemacs{p}{)}\PYGemacs{o}{.}\PYGemacs{n}{sum}\PYGemacs{p}{())}
+    \PYGemacs{n}{term1} \PYGemacs{o}{=} \PYGemacs{l+m+mf}{0.5}\PYGemacs{o}{*}\PYGemacs{n}{logdetC}
+    \PYGemacs{c+c1}{\PYGemacsZsh{}print(term1)}
+    \PYGemacs{n}{term21} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{matmul}\PYGemacs{p}{(}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{linalg}\PYGemacs{o}{.}\PYGemacs{n}{inv}\PYGemacs{p}{(}\PYGemacs{n}{C\PYGemacsZus{}theta}\PYGemacs{p}{),} \PYGemacs{n}{y}\PYGemacs{p}{)}
+    \PYGemacs{n}{term2} \PYGemacs{o}{=} \PYGemacs{l+m+mf}{0.5}\PYGemacs{o}{*}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{matmul}\PYGemacs{p}{(}\PYGemacs{n}{y}\PYGemacs{p}{,} \PYGemacs{n}{term21}\PYGemacs{p}{)}
+    \PYGemacs{c+c1}{\PYGemacsZsh{}print(term2)}
+    \PYGemacs{n}{term3} \PYGemacs{o}{=} \PYGemacs{l+m+mf}{0.5}\PYGemacs{o}{*}\PYGemacs{n+nb}{len}\PYGemacs{p}{(}\PYGemacs{n}{y}\PYGemacs{p}{)}\PYGemacs{o}{*}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{log}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{2}\PYGemacs{o}{*}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{pi}\PYGemacs{p}{)}
+    \PYGemacs{k}{return} \PYGemacs{n}{term1} \PYGemacs{o}{+} \PYGemacs{n}{term2} \PYGemacs{o}{+} \PYGemacs{n}{term3}
+
+\PYGemacs{n}{extra} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{arange}\PYGemacs{p}{(}\PYGemacs{l+m+mf}{431.5}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{600}\PYGemacs{p}{)}
+
+\PYGemacs{n}{thing} \PYGemacs{o}{=} \PYGemacs{n}{cl}\PYGemacs{o}{.}\PYGemacs{n}{kernal}\PYGemacs{p}{(}\PYGemacs{n}{months}\PYGemacs{p}{,} \PYGemacs{n}{co2}\PYGemacs{p}{,} \PYGemacs{n}{extra}\PYGemacs{p}{,} \PYGemacs{l+m+mf}{2.7e\PYGemacsZhy{}01}\PYGemacs{p}{,} \PYGemacs{l+m+mf}{1.09}\PYGemacs{p}{,} \PYGemacs{l+m+mf}{3.05e03}\PYGemacs{p}{,} \PYGemacs{l+m+mf}{3.0e03}\PYGemacs{p}{,} \PYGemacs{l+m+mf}{2.0e3}\PYGemacs{p}{)}
+\PYGemacs{n}{thing2} \PYGemacs{o}{=} \PYGemacs{n}{cl}\PYGemacs{o}{.}\PYGemacs{n}{kernal}\PYGemacs{p}{(}\PYGemacs{n}{months}\PYGemacs{p}{,} \PYGemacs{n}{co2}\PYGemacs{p}{,} \PYGemacs{n}{extra}\PYGemacs{p}{,} \PYGemacs{l+m+mf}{2.7e\PYGemacsZhy{}01}\PYGemacs{p}{,} \PYGemacs{l+m+mf}{1.09}\PYGemacs{p}{,} \PYGemacs{l+m+mf}{3.05e03}\PYGemacs{p}{,} \PYGemacs{l+m+mf}{3.0e03}\PYGemacs{p}{,} \PYGemacs{l+m+mf}{2.0e3}\PYGemacs{p}{)}
+
+\PYGemacs{k}{def} \PYGemacs{n+nf}{plotter}\PYGemacs{p}{(}\PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{lmbda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{):}
+    \PYGemacs{n}{ker} \PYGemacs{o}{=} \PYGemacs{n}{cl}\PYGemacs{o}{.}\PYGemacs{n}{kernal}\PYGemacs{p}{(}\PYGemacs{n}{months}\PYGemacs{p}{,} \PYGemacs{n}{co2}\PYGemacs{p}{,} \PYGemacs{n}{extra}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{,} \PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{lmbda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{)}
+    \PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{plot}\PYGemacs{p}{(}\PYGemacs{n}{extra}\PYGemacs{p}{,} \PYGemacs{n}{ker}\PYGemacs{p}{[}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{])}
+    \PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{plot}\PYGemacs{p}{(}\PYGemacs{n}{months}\PYGemacs{p}{,} \PYGemacs{n}{co2}\PYGemacs{p}{)}
+    \PYGemacs{n+nb}{file} \PYGemacs{o}{=} \PYGemacs{l+s+s1}{\PYGemacsZsq{}pl\PYGemacsZob{}\PYGemacsZcb{}\PYGemacsZhy{}\PYGemacsZob{}\PYGemacsZcb{}\PYGemacsZhy{}\PYGemacsZob{}\PYGemacsZcb{}\PYGemacsZhy{}\PYGemacsZob{}\PYGemacsZcb{}\PYGemacsZhy{}\PYGemacsZob{}\PYGemacsZcb{}.png\PYGemacsZsq{}}\PYGemacs{o}{.}\PYGemacs{n}{format}\PYGemacs{p}{(}\PYGemacs{n}{period}\PYGemacs{p}{,} \PYGemacs{n}{lmbda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{)}
+    \PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{savefig}\PYGemacs{p}{(}\PYGemacs{n+nb}{file}\PYGemacs{p}{)}
+    \PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{close}\PYGemacs{p}{()}
+
+\PYGemacs{c+c1}{\PYGemacsZsh{}the following code will find the maximizing parameters for a given value of std and the plots}
+\PYGemacs{n}{std} \PYGemacs{o}{=} \PYGemacs{l+m+mf}{0.70}
+\PYGemacs{n}{helper2} \PYGemacs{o}{=} \PYGemacs{k}{lambda} \PYGemacs{n}{lmbda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin} \PYGemacs{p}{:} \PYGemacs{n}{neg\PYGemacsZus{}log\PYGemacsZus{}likelihood}\PYGemacs{p}{(}\PYGemacs{n}{co2}\PYGemacs{p}{,} \PYGemacs{l+m+mf}{3.81}\PYGemacs{p}{,} \PYGemacs{n}{lmbda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}sin}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{)}
+\PYGemacs{n}{find\PYGemacsZus{}mins} \PYGemacs{o}{=} \PYGemacs{n}{minimize}\PYGemacs{p}{(}\PYGemacs{k}{lambda} \PYGemacs{n}{x}\PYGemacs{p}{:} \PYGemacs{n}{helper2}\PYGemacs{p}{(}\PYGemacs{o}{*}\PYGemacs{n}{x}\PYGemacs{p}{),} \PYGemacs{n}{x0}\PYGemacs{o}{=}\PYGemacs{p}{[}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{],} \PYGemacs{n}{method}\PYGemacs{o}{=}\PYGemacs{l+s+s1}{\PYGemacsZsq{}BFGS\PYGemacsZsq{}}\PYGemacs{p}{)}
+\PYGemacs{n}{mins} \PYGemacs{o}{=} \PYGemacs{n}{find\PYGemacsZus{}mins}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}x\PYGemacsZsq{}}\PYGemacs{p}{]}
+\PYGemacs{c+c1}{\PYGemacsZsh{}mins = np.array([4.86712438e+03,   4.87102545e+03,   3.03390715e+00])}
+\PYGemacs{n}{plotter}\PYGemacs{p}{(}\PYGemacs{l+m+mf}{3.81}\PYGemacs{p}{,} \PYGemacs{o}{*}\PYGemacs{n}{mins}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{)}
+\PYGemacs{n}{ker} \PYGemacs{o}{=} \PYGemacs{n}{cl}\PYGemacs{o}{.}\PYGemacs{n}{kernal}\PYGemacs{p}{(}\PYGemacs{n}{months}\PYGemacs{p}{,}  \PYGemacs{n}{co2}\PYGemacs{p}{,} \PYGemacs{n}{extra}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{,} \PYGemacs{l+m+mf}{3.81}\PYGemacs{p}{,} \PYGemacs{o}{*}\PYGemacs{n}{mins}\PYGemacs{p}{)}
+
+\PYGemacs{n}{mu} \PYGemacs{o}{=} \PYGemacs{n}{ker}\PYGemacs{p}{[}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{]}
+\PYGemacs{n}{sd} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{diagonal}\PYGemacs{p}{(}\PYGemacs{n}{ker}\PYGemacs{p}{[}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{])}
+\PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{plot}\PYGemacs{p}{(}\PYGemacs{n}{months}\PYGemacs{p}{,} \PYGemacs{n}{co2} \PYGemacs{o}{+} \PYGemacs{n}{co2\PYGemacsZus{}unnorm}\PYGemacs{o}{.}\PYGemacs{n}{mean}\PYGemacs{p}{())}
+\PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{fill\PYGemacsZus{}between}\PYGemacs{p}{(}\PYGemacs{n}{extra}\PYGemacs{p}{,} \PYGemacs{n}{mu} \PYGemacs{o}{+} \PYGemacs{n}{co2\PYGemacsZus{}unnorm}\PYGemacs{o}{.}\PYGemacs{n}{mean}\PYGemacs{p}{()} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{sd}\PYGemacs{p}{,} \PYGemacs{n}{mu} \PYGemacs{o}{+} \PYGemacs{n}{co2\PYGemacsZus{}unnorm}\PYGemacs{o}{.}\PYGemacs{n}{mean}\PYGemacs{p}{()} \PYGemacs{o}{+} \PYGemacs{n}{sd}\PYGemacs{p}{,} \PYGemacs{n}{color}\PYGemacs{o}{=}\PYGemacs{l+s+s1}{\PYGemacsZsq{}red\PYGemacsZsq{}}\PYGemacs{p}{)}
+\PYGemacs{c+c1}{\PYGemacsZsh{}file = \PYGemacsZsq{}spread\PYGemacsZob{}\PYGemacsZcb{}.png\PYGemacsZsq{}.format(time.clock())}
+\PYGemacs{c+c1}{\PYGemacsZsh{}plt.savefig(file)}
+\PYGemacs{c+c1}{\PYGemacsZsh{}plt.close()}
+\end{Verbatim}

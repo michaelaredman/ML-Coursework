@@ -32,7 +32,6 @@ coors = np.where(km3low==0)
 #km4.iterate(15)
 #km4low = km4.clusters.reshape(640, 640)
 
-
 gaus2.iterate(30)
 gaus3.iterate(30)
 gaus4.iterate(30)
@@ -71,7 +70,7 @@ for i in np.arange(50, 75, 1):
     print(new_ll)
     ll.append(new_ll)
 
-ks = np.arange(50, 65, 1)
+ks = np.arange(50, 75, 1)
 
 plt.plot(locs[:, 0], locs[:, 1], 'b,')
 plt.plot(gmm.mu[:, 0], gmm.mu[:, 1], 'yo')

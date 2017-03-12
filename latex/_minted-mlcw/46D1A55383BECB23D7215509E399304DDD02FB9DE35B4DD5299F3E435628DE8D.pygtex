@@ -1,0 +1,78 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{numpy} \PYGemacs{k+kn}{as} \PYGemacs{n+nn}{np}
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{time}
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{random}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{matplotlib} \PYGemacs{k+kn}{import} \PYGemacs{n}{pyplot} \PYGemacs{k}{as} \PYGemacs{n}{plt}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{scipy.optimize} \PYGemacs{k+kn}{import} \PYGemacs{n}{minimize}
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{pandas} \PYGemacs{k+kn}{as} \PYGemacs{n+nn}{pd}
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{seaborn} \PYGemacs{k+kn}{as} \PYGemacs{n+nn}{sns}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{cluster} \PYGemacs{k+kn}{import} \PYGemacs{n}{cluster} \PYGemacs{k}{as} \PYGemacs{n}{cl}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{clus} \PYGemacs{k+kn}{import} \PYGemacs{o}{*}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{scipy} \PYGemacs{k+kn}{import} \PYGemacs{n}{misc}
+
+\PYGemacs{c+c1}{\PYGemacsZsh{}plt.ion()}
+
+\PYGemacs{n}{cells\PYGemacsZus{}image} \PYGemacs{o}{=} \PYGemacs{n}{misc}\PYGemacs{o}{.}\PYGemacs{n}{imread}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}../FluorescentCells.jpg\PYGemacsZsq{}}\PYGemacs{p}{,} \PYGemacs{n}{mode}\PYGemacs{o}{=}\PYGemacs{l+s+s1}{\PYGemacsZsq{}RGB\PYGemacsZsq{}}\PYGemacs{p}{)}
+\PYGemacs{n}{cells} \PYGemacs{o}{=} \PYGemacs{n}{cells\PYGemacsZus{}image}\PYGemacs{o}{.}\PYGemacs{n}{reshape}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{640}\PYGemacs{o}{*}\PYGemacs{l+m+mi}{640}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{3}\PYGemacs{p}{)}
+
+\PYGemacs{n}{km2} \PYGemacs{o}{=} \PYGemacs{n}{KMeans}\PYGemacs{p}{(}\PYGemacs{n}{cells}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{2}\PYGemacs{p}{)}
+\PYGemacs{n}{km3} \PYGemacs{o}{=} \PYGemacs{n}{KMeans}\PYGemacs{p}{(}\PYGemacs{n}{cells}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{3}\PYGemacs{p}{)}
+\PYGemacs{n}{km4} \PYGemacs{o}{=} \PYGemacs{n}{KMeans}\PYGemacs{p}{(}\PYGemacs{n}{cells}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{4}\PYGemacs{p}{)}
+
+\PYGemacs{n}{gaus2} \PYGemacs{o}{=} \PYGemacs{n}{GaussianMixture}\PYGemacs{p}{(}\PYGemacs{n}{cells}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{2}\PYGemacs{p}{)}
+\PYGemacs{n}{gaus3} \PYGemacs{o}{=} \PYGemacs{n}{GaussianMixture}\PYGemacs{p}{(}\PYGemacs{n}{cells}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{3}\PYGemacs{p}{)}
+\PYGemacs{n}{gaus4} \PYGemacs{o}{=} \PYGemacs{n}{GaussianMixture}\PYGemacs{p}{(}\PYGemacs{n}{cells}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{4}\PYGemacs{p}{)}
+
+\PYGemacs{n}{km3}\PYGemacs{o}{.}\PYGemacs{n}{iterate}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{15}\PYGemacs{p}{)}
+\PYGemacs{n}{km3low} \PYGemacs{o}{=} \PYGemacs{n}{km3}\PYGemacs{o}{.}\PYGemacs{n}{clusters}\PYGemacs{o}{.}\PYGemacs{n}{reshape}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{640} \PYGemacs{p}{,}\PYGemacs{l+m+mi}{640}\PYGemacs{p}{)}
+\PYGemacs{n}{coors} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{where}\PYGemacs{p}{(}\PYGemacs{n}{km3low}\PYGemacs{o}{==}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{)}
+
+\PYGemacs{c+c1}{\PYGemacsZsh{}km2.iterate(15)}
+\PYGemacs{c+c1}{\PYGemacsZsh{}km2low = km2.clusters.reshape(640, 640)}
+
+\PYGemacs{c+c1}{\PYGemacsZsh{}km4.iterate(15)}
+\PYGemacs{c+c1}{\PYGemacsZsh{}km4low = km4.clusters.reshape(640, 640)}
+
+\PYGemacs{n}{gaus2}\PYGemacs{o}{.}\PYGemacs{n}{iterate}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{30}\PYGemacs{p}{)}
+\PYGemacs{n}{gaus3}\PYGemacs{o}{.}\PYGemacs{n}{iterate}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{30}\PYGemacs{p}{)}
+\PYGemacs{n}{gaus4}\PYGemacs{o}{.}\PYGemacs{n}{iterate}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{30}\PYGemacs{p}{)}
+\PYGemacs{n}{classifiedG2} \PYGemacs{o}{=} \PYGemacs{n}{gaus2}\PYGemacs{o}{.}\PYGemacs{n}{classify}\PYGemacs{p}{(}\PYGemacs{n}{cells}\PYGemacs{p}{)}
+\PYGemacs{n}{num0} \PYGemacs{o}{=} \PYGemacs{p}{(}\PYGemacs{n}{classifiedG2} \PYGemacs{o}{==} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{)}\PYGemacs{o}{.}\PYGemacs{n}{sum}\PYGemacs{p}{()}
+\PYGemacs{n}{num1} \PYGemacs{o}{=} \PYGemacs{p}{(}\PYGemacs{n}{classifiedG2} \PYGemacs{o}{==} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{)}\PYGemacs{o}{.}\PYGemacs{n}{sum}\PYGemacs{p}{()}
+\PYGemacs{n}{ind} \PYGemacs{o}{=} \PYGemacs{l+m+mi}{1}\PYGemacs{o}{*}\PYGemacs{p}{(}\PYGemacs{n}{num1} \PYGemacs{o}{\PYGemacsZlt{}=} \PYGemacs{n}{num0}\PYGemacs{p}{)}
+\PYGemacs{n}{coors} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{where}\PYGemacs{p}{(}\PYGemacs{n}{classifiedG2}\PYGemacs{o}{.}\PYGemacs{n}{reshape}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{640}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{640}\PYGemacs{p}{)} \PYGemacs{o}{==} \PYGemacs{n}{ind}\PYGemacs{p}{)}
+
+\PYGemacs{n}{classifiedG3} \PYGemacs{o}{=} \PYGemacs{n}{gaus3}\PYGemacs{o}{.}\PYGemacs{n}{classify}\PYGemacs{p}{()}
+\PYGemacs{n}{classifiedG4} \PYGemacs{o}{=} \PYGemacs{n}{gaus4}\PYGemacs{o}{.}\PYGemacs{n}{classify}\PYGemacs{p}{()}
+
+\PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{imsave}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}gmm2.png\PYGemacsZsq{}}\PYGemacs{p}{,} \PYGemacs{n}{classifiedG2}\PYGemacs{o}{.}\PYGemacs{n}{reshape}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{640}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{640}\PYGemacs{p}{))}
+\PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{imsave}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}gmm3.png\PYGemacsZsq{}}\PYGemacs{p}{,} \PYGemacs{n}{classifiedG3}\PYGemacs{o}{.}\PYGemacs{n}{reshape}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{640}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{640}\PYGemacs{p}{))}
+\PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{imsave}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}gmm4.png\PYGemacsZsq{}}\PYGemacs{p}{,} \PYGemacs{n}{classifiedG4}\PYGemacs{o}{.}\PYGemacs{n}{reshape}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{640}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{640}\PYGemacs{p}{))}
+
+\PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{imsave}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}km2.png\PYGemacsZsq{}}\PYGemacs{p}{,} \PYGemacs{n}{km2low}\PYGemacs{p}{)}
+\PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{imsave}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}km3.png\PYGemacsZsq{}}\PYGemacs{p}{,} \PYGemacs{n}{km3low}\PYGemacs{p}{)}
+\PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{imsave}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}km4.png\PYGemacsZsq{}}\PYGemacs{p}{,} \PYGemacs{n}{km4low}\PYGemacs{p}{)}
+
+\PYGemacs{n}{locs} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{vstack}\PYGemacs{p}{([}\PYGemacs{n}{coors}\PYGemacs{p}{[}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{],} \PYGemacs{n}{coors}\PYGemacs{p}{[}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{]])}\PYGemacs{o}{.}\PYGemacs{n}{T}
+
+\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{random}\PYGemacs{o}{.}\PYGemacs{n}{shuffle}\PYGemacs{p}{(}\PYGemacs{n}{locs}\PYGemacs{p}{)}
+
+\PYGemacs{n}{train} \PYGemacs{o}{=} \PYGemacs{n}{locs}\PYGemacs{p}{[:}\PYGemacs{o}{\PYGemacsZhy{}}\PYGemacs{l+m+mi}{1000}\PYGemacs{p}{,} \PYGemacs{p}{:]}
+\PYGemacs{n}{test} \PYGemacs{o}{=} \PYGemacs{n}{locs}\PYGemacs{p}{[}\PYGemacs{o}{\PYGemacsZhy{}}\PYGemacs{l+m+mi}{1000}\PYGemacs{p}{:,} \PYGemacs{p}{:]}
+\PYGemacs{n}{ll} \PYGemacs{o}{=} \PYGemacs{p}{[]}
+\PYGemacs{n}{mus} \PYGemacs{o}{=} \PYGemacs{p}{[]}
+\PYGemacs{k}{for} \PYGemacs{n}{i} \PYGemacs{o+ow}{in} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{arange}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{50}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{75}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{):}
+    \PYGemacs{k}{print}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{)}
+    \PYGemacs{n}{gmm} \PYGemacs{o}{=} \PYGemacs{n}{GaussianMixture}\PYGemacs{p}{(}\PYGemacs{n}{train}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{p}{)}
+    \PYGemacs{n}{gmm}\PYGemacs{o}{.}\PYGemacs{n}{iterate}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{35}\PYGemacs{p}{)}
+    \PYGemacs{n}{mus}\PYGemacs{o}{.}\PYGemacs{n}{append}\PYGemacs{p}{(}\PYGemacs{n}{gmm}\PYGemacs{o}{.}\PYGemacs{n}{mu}\PYGemacs{p}{)}
+    \PYGemacs{k}{print}\PYGemacs{p}{(}\PYGemacs{l+s+s2}{\PYGemacsZdq{}Iteration completed\PYGemacsZdq{}}\PYGemacs{p}{)}
+    \PYGemacs{n}{new\PYGemacsZus{}ll} \PYGemacs{o}{=} \PYGemacs{n}{gmm}\PYGemacs{o}{.}\PYGemacs{n}{loglikelihood}\PYGemacs{p}{(}\PYGemacs{n}{test}\PYGemacs{p}{)}
+    \PYGemacs{k}{print}\PYGemacs{p}{(}\PYGemacs{n}{new\PYGemacsZus{}ll}\PYGemacs{p}{)}
+    \PYGemacs{n}{ll}\PYGemacs{o}{.}\PYGemacs{n}{append}\PYGemacs{p}{(}\PYGemacs{n}{new\PYGemacsZus{}ll}\PYGemacs{p}{)}
+
+\PYGemacs{n}{ks} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{arange}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{50}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{75}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{)}
+
+\PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{plot}\PYGemacs{p}{(}\PYGemacs{n}{locs}\PYGemacs{p}{[:,} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{],} \PYGemacs{n}{locs}\PYGemacs{p}{[:,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{],} \PYGemacs{l+s+s1}{\PYGemacsZsq{}b,\PYGemacsZsq{}}\PYGemacs{p}{)}
+\PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{plot}\PYGemacs{p}{(}\PYGemacs{n}{gmm}\PYGemacs{o}{.}\PYGemacs{n}{mu}\PYGemacs{p}{[:,} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{],} \PYGemacs{n}{gmm}\PYGemacs{o}{.}\PYGemacs{n}{mu}\PYGemacs{p}{[:,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{],} \PYGemacs{l+s+s1}{\PYGemacsZsq{}yo\PYGemacsZsq{}}\PYGemacs{p}{)}
+\end{Verbatim}

@@ -1,0 +1,102 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{numpy} \PYGemacs{k+kn}{as} \PYGemacs{n+nn}{np}
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{time}
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{random}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{matplotlib} \PYGemacs{k+kn}{import} \PYGemacs{n}{pyplot} \PYGemacs{k}{as} \PYGemacs{n}{plt}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{scipy} \PYGemacs{k+kn}{import} \PYGemacs{n}{misc}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{scipy.optimize} \PYGemacs{k+kn}{import} \PYGemacs{n}{minimize}
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{pandas} \PYGemacs{k+kn}{as} \PYGemacs{n+nn}{pd}
+\PYGemacs{k+kn}{import} \PYGemacs{n+nn}{seaborn} \PYGemacs{k+kn}{as} \PYGemacs{n+nn}{sns}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{cluster} \PYGemacs{k+kn}{import} \PYGemacs{n}{cluster} \PYGemacs{k}{as} \PYGemacs{n}{cl}
+\PYGemacs{k+kn}{from} \PYGemacs{n+nn}{clus} \PYGemacs{k+kn}{import} \PYGemacs{o}{*}
+
+\PYGemacs{n}{coins} \PYGemacs{o}{=} \PYGemacs{n}{pd}\PYGemacs{o}{.}\PYGemacs{n}{read\PYGemacsZus{}csv}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}Coinbase\PYGemacsZus{}BTCUSD\PYGemacsZus{}trades\PYGemacsZus{}2016\PYGemacsZus{}07\PYGemacsZus{}07.csv\PYGemacsZsq{}}\PYGemacs{p}{)}
+
+\PYGemacs{n}{bids\PYGemacsZus{}df} \PYGemacs{o}{=} \PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}bid\PYGemacsZsq{}}\PYGemacs{p}{]} \PYGemacs{o}{==} \PYGemacs{n+nb+bp}{True}\PYGemacs{p}{]}
+\PYGemacs{n}{asks\PYGemacsZus{}df} \PYGemacs{o}{=} \PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}bid\PYGemacsZsq{}}\PYGemacs{p}{]} \PYGemacs{o}{==} \PYGemacs{n+nb+bp}{False}\PYGemacs{p}{]}
+
+\PYGemacs{n}{bids} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{vstack}\PYGemacs{p}{([}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{(}\PYGemacs{n}{bids\PYGemacsZus{}df}\PYGemacs{o}{.}\PYGemacs{n}{index}\PYGemacs{p}{),} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{(}\PYGemacs{n}{bids\PYGemacsZus{}df}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}price\PYGemacsZsq{}}\PYGemacs{p}{])])}\PYGemacs{o}{.}\PYGemacs{n}{T}
+\PYGemacs{n}{asks} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{vstack}\PYGemacs{p}{([}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{(}\PYGemacs{n}{asks\PYGemacsZus{}df}\PYGemacs{o}{.}\PYGemacs{n}{index}\PYGemacs{p}{),} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{array}\PYGemacs{p}{(}\PYGemacs{n}{asks\PYGemacsZus{}df}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}price\PYGemacsZsq{}}\PYGemacs{p}{])])}\PYGemacs{o}{.}\PYGemacs{n}{T}
+
+\PYGemacs{n+nb}{vars} \PYGemacs{o}{=} \PYGemacs{p}{[}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{var}\PYGemacs{p}{(}\PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{i}\PYGemacs{o}{*}\PYGemacs{l+m+mi}{50}\PYGemacs{p}{:(}\PYGemacs{n}{i}\PYGemacs{o}{+}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{)}\PYGemacs{o}{*}\PYGemacs{l+m+mi}{50}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{])} \PYGemacs{k}{for} \PYGemacs{n}{i} \PYGemacs{o+ow}{in} \PYGemacs{n+nb}{range}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{100}\PYGemacs{p}{)]}
+
+\PYGemacs{k}{def} \PYGemacs{n+nf}{neg\PYGemacsZus{}log\PYGemacsZus{}likelihood}\PYGemacs{p}{(}\PYGemacs{n}{y}\PYGemacs{p}{,} \PYGemacs{n}{lmbda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{):}
+    \PYGemacs{n}{C\PYGemacsZus{}theta} \PYGemacs{o}{=} \PYGemacs{n}{cl}\PYGemacs{o}{.}\PYGemacs{n}{k\PYGemacsZus{}matrix\PYGemacsZus{}simple}\PYGemacs{p}{(}\PYGemacs{n}{bids}\PYGemacs{p}{[:}\PYGemacs{l+m+mi}{1000}\PYGemacs{p}{:}\PYGemacs{l+m+mi}{10}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{],} \PYGemacs{n}{bids}\PYGemacs{p}{[:}\PYGemacs{l+m+mi}{1000}\PYGemacs{p}{:}\PYGemacs{l+m+mi}{10}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{],} \PYGemacs{n}{lmbda}\PYGemacs{p}{,} \PYGemacs{n}{var\PYGemacsZus{}se}\PYGemacs{p}{)}  \PYGemacs{o}{+} \PYGemacs{n}{std}\PYGemacs{o}{*}\PYGemacs{n}{std}\PYGemacs{o}{*}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{identity}\PYGemacs{p}{(}\PYGemacs{n+nb}{len}\PYGemacs{p}{(}\PYGemacs{n}{bids}\PYGemacs{p}{[:}\PYGemacs{l+m+mi}{1000}\PYGemacs{p}{:}\PYGemacs{l+m+mi}{10}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{]))}
+    \PYGemacs{n}{evals} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{linalg}\PYGemacs{o}{.}\PYGemacs{n}{eigvals}\PYGemacs{p}{(}\PYGemacs{n}{C\PYGemacsZus{}theta}\PYGemacs{p}{)}
+    \PYGemacs{n}{logdetC} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{real}\PYGemacs{p}{(}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{log}\PYGemacs{p}{(}\PYGemacs{n}{evals}\PYGemacs{p}{)}\PYGemacs{o}{.}\PYGemacs{n}{sum}\PYGemacs{p}{())}
+    \PYGemacs{n}{term1} \PYGemacs{o}{=} \PYGemacs{l+m+mf}{0.5}\PYGemacs{o}{*}\PYGemacs{n}{logdetC}
+    \PYGemacs{n}{term21} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{matmul}\PYGemacs{p}{(}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{linalg}\PYGemacs{o}{.}\PYGemacs{n}{inv}\PYGemacs{p}{(}\PYGemacs{n}{C\PYGemacsZus{}theta}\PYGemacs{p}{),} \PYGemacs{n}{y}\PYGemacs{p}{)}
+    \PYGemacs{n}{term2} \PYGemacs{o}{=} \PYGemacs{l+m+mf}{0.5}\PYGemacs{o}{*}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{matmul}\PYGemacs{p}{(}\PYGemacs{n}{y}\PYGemacs{p}{,} \PYGemacs{n}{term21}\PYGemacs{p}{)}
+    \PYGemacs{n}{term3} \PYGemacs{o}{=} \PYGemacs{l+m+mf}{0.5}\PYGemacs{o}{*}\PYGemacs{n+nb}{len}\PYGemacs{p}{(}\PYGemacs{n}{y}\PYGemacs{p}{)}\PYGemacs{o}{*}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{log}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{2}\PYGemacs{o}{*}\PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{pi}\PYGemacs{p}{)}
+    \PYGemacs{k}{return} \PYGemacs{n}{term1} \PYGemacs{o}{+} \PYGemacs{n}{term2} \PYGemacs{o}{+} \PYGemacs{n}{term3}
+
+\PYGemacs{c+c1}{\PYGemacsZsh{}helper = lambda lmbda, var\PYGemacsZus{}se: neg\PYGemacsZus{}log\PYGemacsZus{}likelihood(bids[:1000:10, 1], lmbda, var\PYGemacsZus{}se, 0.15)}
+
+\PYGemacs{c+c1}{\PYGemacsZsh{}find\PYGemacsZus{}mins = minimize(lambda x: helper(*x), x0=[1, 1], method=\PYGemacsZsq{}BFGS\PYGemacsZsq{})}
+\PYGemacs{c+c1}{\PYGemacsZsh{}mins = find\PYGemacsZus{}mins[\PYGemacsZsq{}x\PYGemacsZsq{}]}
+
+\PYGemacs{k}{def} \PYGemacs{n+nf}{forcast}\PYGemacs{p}{(}\PYGemacs{n}{begin}\PYGemacs{p}{,} \PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{n}{end}\PYGemacs{p}{):}
+    \PYGemacs{n}{section\PYGemacsZus{}index} \PYGemacs{o}{=} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{begin}\PYGemacs{p}{:}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{]}
+    \PYGemacs{n}{section\PYGemacsZus{}price} \PYGemacs{o}{=} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{begin}\PYGemacs{p}{:}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{]} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{]}
+    \PYGemacs{n}{extrap} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{arange}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{250}\PYGemacs{p}{)} \PYGemacs{o}{+} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{]}
+    \PYGemacs{n}{ker} \PYGemacs{o}{=} \PYGemacs{n}{cl}\PYGemacs{o}{.}\PYGemacs{n}{kernal\PYGemacsZus{}simple}\PYGemacs{p}{(}\PYGemacs{n}{section\PYGemacsZus{}index}\PYGemacs{p}{,} \PYGemacs{n}{section\PYGemacsZus{}price}\PYGemacs{p}{,} \PYGemacs{n}{extrap}\PYGemacs{p}{,} \PYGemacs{l+m+mf}{0.1}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1000}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{)}
+    \PYGemacs{n}{sd} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{diag}\PYGemacs{p}{(}\PYGemacs{n}{ker}\PYGemacs{p}{[}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{])}
+    \PYGemacs{n}{predicted} \PYGemacs{o}{=} \PYGemacs{n}{ker}\PYGemacs{p}{[}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{]} \PYGemacs{o}{+} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{]}
+    \PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{fill\PYGemacsZus{}between}\PYGemacs{p}{(}\PYGemacs{n}{extrap}\PYGemacs{p}{,} \PYGemacs{n}{predicted} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{sd}\PYGemacs{p}{,} \PYGemacs{n}{predicted} \PYGemacs{o}{+} \PYGemacs{n}{sd}\PYGemacs{p}{,} \PYGemacs{n}{color}\PYGemacs{o}{=}\PYGemacs{l+s+s1}{\PYGemacsZsq{}red\PYGemacsZsq{}}\PYGemacs{p}{)}
+
+\PYGemacs{k}{for} \PYGemacs{n}{i} \PYGemacs{o+ow}{in} \PYGemacs{n+nb}{range}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{45}\PYGemacs{p}{):}
+    \PYGemacs{n}{forcast}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{o}{*}\PYGemacs{l+m+mi}{200}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{o}{*}\PYGemacs{l+m+mi}{200}\PYGemacs{o}{+}\PYGemacs{l+m+mi}{500}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{o}{*}\PYGemacs{l+m+mi}{200}\PYGemacs{o}{+}\PYGemacs{l+m+mi}{550}\PYGemacs{p}{)}
+\PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{plot}\PYGemacs{p}{(}\PYGemacs{n}{bids}\PYGemacs{p}{[:,} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{],} \PYGemacs{n}{bids}\PYGemacs{p}{[:,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{])}
+\PYGemacs{n}{plt}\PYGemacs{o}{.}\PYGemacs{n}{show}\PYGemacs{p}{()}
+
+\PYGemacs{k}{def} \PYGemacs{n+nf}{trade}\PYGemacs{p}{(}\PYGemacs{n}{start\PYGemacsZus{}time}\PYGemacs{p}{,} \PYGemacs{n}{end\PYGemacsZus{}time}\PYGemacs{p}{,} \PYGemacs{n}{predicted}\PYGemacs{p}{):}
+    \PYGemacs{n}{buy\PYGemacsZus{}time} \PYGemacs{o}{=} \PYGemacs{n+nb}{next}\PYGemacs{p}{(}\PYGemacs{n}{time} \PYGemacs{k}{for} \PYGemacs{n}{time} \PYGemacs{o+ow}{in} \PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}bid\PYGemacsZsq{}}\PYGemacs{p}{]} \PYGemacs{o}{==} \PYGemacs{n+nb+bp}{False}\PYGemacs{p}{]}\PYGemacs{o}{.}\PYGemacs{n}{index} \PYGemacs{k}{if} \PYGemacs{n}{time} \PYGemacs{o}{\PYGemacsZgt{}=} \PYGemacs{n}{start\PYGemacsZus{}time}\PYGemacs{p}{)}
+    \PYGemacs{n}{sell\PYGemacsZus{}time} \PYGemacs{o}{=} \PYGemacs{n+nb}{next}\PYGemacs{p}{(}\PYGemacs{n}{time} \PYGemacs{k}{for} \PYGemacs{n}{time} \PYGemacs{o+ow}{in} \PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}bid\PYGemacsZsq{}}\PYGemacs{p}{]} \PYGemacs{o}{==} \PYGemacs{n+nb+bp}{True}\PYGemacs{p}{]}\PYGemacs{o}{.}\PYGemacs{n}{index} \PYGemacs{k}{if} \PYGemacs{n}{time} \PYGemacs{o}{\PYGemacsZgt{}=} \PYGemacs{n}{start\PYGemacsZus{}time}\PYGemacs{p}{)}
+    \PYGemacs{n}{buy\PYGemacsZus{}price} \PYGemacs{o}{=} \PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}price\PYGemacsZsq{}}\PYGemacs{p}{]}\PYGemacs{o}{.}\PYGemacs{n}{loc}\PYGemacs{p}{[}\PYGemacs{n}{buy\PYGemacsZus{}time}\PYGemacs{p}{]}
+    \PYGemacs{n}{sell\PYGemacsZus{}price} \PYGemacs{o}{=} \PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}price\PYGemacsZsq{}}\PYGemacs{p}{]}\PYGemacs{o}{.}\PYGemacs{n}{loc}\PYGemacs{p}{[}\PYGemacs{n}{sell\PYGemacsZus{}time}\PYGemacs{p}{]}
+    \PYGemacs{k}{if} \PYGemacs{n}{buy\PYGemacsZus{}price} \PYGemacs{o}{\PYGemacsZlt{}} \PYGemacs{n}{predicted}\PYGemacs{p}{:}
+        \PYGemacs{n}{weight} \PYGemacs{o}{=} \PYGemacs{n}{predicted} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{buy\PYGemacsZus{}price}
+        \PYGemacs{n}{end\PYGemacsZus{}sell\PYGemacsZus{}time} \PYGemacs{o}{=} \PYGemacs{n+nb}{next}\PYGemacs{p}{(}\PYGemacs{n}{time} \PYGemacs{k}{for} \PYGemacs{n}{time} \PYGemacs{o+ow}{in} \PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}bid\PYGemacsZsq{}}\PYGemacs{p}{]} \PYGemacs{o}{==} \PYGemacs{n+nb+bp}{True}\PYGemacs{p}{]}\PYGemacs{o}{.}\PYGemacs{n}{index} \PYGemacs{k}{if} \PYGemacs{n}{time} \PYGemacs{o}{\PYGemacsZgt{}=} \PYGemacs{n}{end\PYGemacsZus{}time}\PYGemacs{p}{)}
+        \PYGemacs{n}{end\PYGemacsZus{}sell\PYGemacsZus{}price} \PYGemacs{o}{=} \PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}price\PYGemacsZsq{}}\PYGemacs{p}{]}\PYGemacs{o}{.}\PYGemacs{n}{loc}\PYGemacs{p}{[}\PYGemacs{n}{end\PYGemacsZus{}sell\PYGemacsZus{}time}\PYGemacs{p}{]}
+        \PYGemacs{k}{return} \PYGemacs{p}{(}\PYGemacs{n}{end\PYGemacsZus{}sell\PYGemacsZus{}price} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{buy\PYGemacsZus{}price}\PYGemacs{p}{)}\PYGemacs{o}{*}\PYGemacs{n}{weight}
+    \PYGemacs{k}{elif} \PYGemacs{n}{sell\PYGemacsZus{}price} \PYGemacs{o}{\PYGemacsZgt{}} \PYGemacs{n}{predicted}\PYGemacs{p}{:}
+        \PYGemacs{n}{weight} \PYGemacs{o}{=} \PYGemacs{n}{sell\PYGemacsZus{}price} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{predicted}
+        \PYGemacs{n}{end\PYGemacsZus{}buy\PYGemacsZus{}time} \PYGemacs{o}{=} \PYGemacs{n+nb}{next}\PYGemacs{p}{(}\PYGemacs{n}{time} \PYGemacs{k}{for} \PYGemacs{n}{time} \PYGemacs{o+ow}{in} \PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}bid\PYGemacsZsq{}}\PYGemacs{p}{]} \PYGemacs{o}{==} \PYGemacs{n+nb+bp}{False}\PYGemacs{p}{]}\PYGemacs{o}{.}\PYGemacs{n}{index} \PYGemacs{k}{if} \PYGemacs{n}{time} \PYGemacs{o}{\PYGemacsZgt{}=} \PYGemacs{n}{end\PYGemacsZus{}time}\PYGemacs{p}{)}
+        \PYGemacs{n}{end\PYGemacsZus{}buy\PYGemacsZus{}price} \PYGemacs{o}{=} \PYGemacs{n}{coins}\PYGemacs{p}{[}\PYGemacs{l+s+s1}{\PYGemacsZsq{}price\PYGemacsZsq{}}\PYGemacs{p}{]}\PYGemacs{o}{.}\PYGemacs{n}{loc}\PYGemacs{p}{[}\PYGemacs{n}{end\PYGemacsZus{}buy\PYGemacsZus{}time}\PYGemacs{p}{]}
+        \PYGemacs{k}{return} \PYGemacs{p}{(}\PYGemacs{n}{sell\PYGemacsZus{}price} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{end\PYGemacsZus{}buy\PYGemacsZus{}price}\PYGemacs{p}{)}\PYGemacs{o}{*}\PYGemacs{n}{weight}
+    \PYGemacs{k}{else}\PYGemacs{p}{:}
+        \PYGemacs{k}{return} \PYGemacs{l+m+mi}{0}
+
+\PYGemacs{k}{def} \PYGemacs{n+nf}{trading\PYGemacsZus{}strat}\PYGemacs{p}{(}\PYGemacs{n}{begin}\PYGemacs{p}{,} \PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{n}{end}\PYGemacs{p}{):}
+    \PYGemacs{n}{section\PYGemacsZus{}index} \PYGemacs{o}{=} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{begin}\PYGemacs{p}{:}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{]}
+    \PYGemacs{n}{section\PYGemacsZus{}price} \PYGemacs{o}{=} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{begin}\PYGemacs{p}{:}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{]} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{]}
+    \PYGemacs{n}{extrap} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{arange}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{250}\PYGemacs{p}{)} \PYGemacs{o}{+} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{]}
+    \PYGemacs{n}{ker} \PYGemacs{o}{=} \PYGemacs{n}{cl}\PYGemacs{o}{.}\PYGemacs{n}{kernal\PYGemacsZus{}simple}\PYGemacs{p}{(}\PYGemacs{n}{section\PYGemacsZus{}index}\PYGemacs{p}{,} \PYGemacs{n}{section\PYGemacsZus{}price}\PYGemacs{p}{,} \PYGemacs{n}{extrap}\PYGemacs{p}{,} \PYGemacs{l+m+mf}{0.1}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1000}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{)}
+    \PYGemacs{n}{predicted} \PYGemacs{o}{=} \PYGemacs{n}{ker}\PYGemacs{p}{[}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{]} \PYGemacs{o}{+} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{]}
+    \PYGemacs{k}{return} \PYGemacs{n}{trade}\PYGemacs{p}{(}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{n}{end}\PYGemacs{p}{,} \PYGemacs{n}{predicted}\PYGemacs{p}{[}\PYGemacs{o}{\PYGemacsZhy{}}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{])}
+
+\PYGemacs{n}{rtrns} \PYGemacs{o}{=} \PYGemacs{l+m+mi}{0}
+\PYGemacs{k}{for} \PYGemacs{n}{i} \PYGemacs{o+ow}{in} \PYGemacs{n+nb}{range}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{45}\PYGemacs{p}{):}
+    \PYGemacs{n}{current\PYGemacsZus{}trade} \PYGemacs{o}{=} \PYGemacs{n}{trading\PYGemacsZus{}strat}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{o}{*}\PYGemacs{l+m+mi}{200}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{o}{*}\PYGemacs{l+m+mi}{200}\PYGemacs{o}{+}\PYGemacs{l+m+mi}{500}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{o}{*}\PYGemacs{l+m+mi}{200}\PYGemacs{o}{+}\PYGemacs{l+m+mi}{550}\PYGemacs{p}{)}
+    \PYGemacs{k}{print}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}Profit on trade \PYGemacsZob{}\PYGemacsZcb{} is:\PYGemacsZob{}\PYGemacsZcb{}\PYGemacsZsq{}}\PYGemacs{o}{.}\PYGemacs{n}{format}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{p}{,} \PYGemacs{n}{current\PYGemacsZus{}trade}\PYGemacs{p}{))}
+    \PYGemacs{n}{rtrns} \PYGemacs{o}{+=} \PYGemacs{n}{current\PYGemacsZus{}trade}
+\PYGemacs{k}{print}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}Total returns: \PYGemacsZob{}\PYGemacsZcb{}\PYGemacsZsq{}}\PYGemacs{o}{.}\PYGemacs{n}{format}\PYGemacs{p}{(}\PYGemacs{n}{rtrns}\PYGemacs{p}{))}
+
+\PYGemacs{k}{def} \PYGemacs{n+nf}{complex\PYGemacsZus{}trading\PYGemacsZus{}strat}\PYGemacs{p}{(}\PYGemacs{n}{begin}\PYGemacs{p}{,} \PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{n}{end}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{,} \PYGemacs{n}{lmbda}\PYGemacs{p}{,} \PYGemacs{n}{sigma}\PYGemacs{p}{):}
+    \PYGemacs{n}{section\PYGemacsZus{}index} \PYGemacs{o}{=} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{begin}\PYGemacs{p}{:}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{]}
+    \PYGemacs{n}{section\PYGemacsZus{}price} \PYGemacs{o}{=} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{begin}\PYGemacs{p}{:}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{]} \PYGemacs{o}{\PYGemacsZhy{}} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{]}
+    \PYGemacs{n}{extrap} \PYGemacs{o}{=} \PYGemacs{n}{np}\PYGemacs{o}{.}\PYGemacs{n}{arange}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{250}\PYGemacs{p}{)} \PYGemacs{o}{+} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{0}\PYGemacs{p}{]}
+    \PYGemacs{n}{ker} \PYGemacs{o}{=} \PYGemacs{n}{cl}\PYGemacs{o}{.}\PYGemacs{n}{kernal\PYGemacsZus{}simple}\PYGemacs{p}{(}\PYGemacs{n}{section\PYGemacsZus{}index}\PYGemacs{p}{,} \PYGemacs{n}{section\PYGemacsZus{}price}\PYGemacs{p}{,} \PYGemacs{n}{extrap}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{,} \PYGemacs{n}{lmbda}\PYGemacs{p}{,} \PYGemacs{n}{sigma}\PYGemacs{p}{)}
+    \PYGemacs{n}{predicted} \PYGemacs{o}{=} \PYGemacs{n}{ker}\PYGemacs{p}{[}\PYGemacs{l+m+mi}{0}\PYGemacs{p}{]} \PYGemacs{o}{+} \PYGemacs{n}{bids}\PYGemacs{p}{[}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{l+m+mi}{1}\PYGemacs{p}{]}
+    \PYGemacs{k}{return} \PYGemacs{n}{trade}\PYGemacs{p}{(}\PYGemacs{n}{start}\PYGemacs{p}{,} \PYGemacs{n}{end}\PYGemacs{p}{,} \PYGemacs{n}{predicted}\PYGemacs{p}{[}\PYGemacs{o}{\PYGemacsZhy{}}\PYGemacs{l+m+mi}{1}\PYGemacs{p}{])}
+
+\PYGemacs{k}{def} \PYGemacs{n+nf}{first\PYGemacsZus{}half\PYGemacsZus{}trades}\PYGemacs{p}{(}\PYGemacs{n}{std}\PYGemacs{p}{,} \PYGemacs{n}{lmbda}\PYGemacs{p}{,} \PYGemacs{n}{sigma}\PYGemacs{p}{):}
+    \PYGemacs{n}{rtrns} \PYGemacs{o}{=} \PYGemacs{l+m+mi}{0}
+    \PYGemacs{k}{print}\PYGemacs{p}{(}\PYGemacs{l+s+s1}{\PYGemacsZsq{}trading!\PYGemacsZsq{}}\PYGemacs{p}{)}
+    \PYGemacs{k}{for} \PYGemacs{n}{i} \PYGemacs{o+ow}{in} \PYGemacs{n+nb}{range}\PYGemacs{p}{(}\PYGemacs{l+m+mi}{20}\PYGemacs{p}{):}
+        \PYGemacs{n}{current\PYGemacsZus{}trade} \PYGemacs{o}{=} \PYGemacs{n}{complex\PYGemacsZus{}trading\PYGemacsZus{}strat}\PYGemacs{p}{(}\PYGemacs{n}{i}\PYGemacs{o}{*}\PYGemacs{l+m+mi}{200}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{o}{*}\PYGemacs{l+m+mi}{200}\PYGemacs{o}{+}\PYGemacs{l+m+mi}{500}\PYGemacs{p}{,} \PYGemacs{n}{i}\PYGemacs{o}{*}\PYGemacs{l+m+mi}{200}\PYGemacs{o}{+}\PYGemacs{l+m+mi}{550}\PYGemacs{p}{,} \PYGemacs{n}{std}\PYGemacs{p}{,} \PYGemacs{n}{lmbda}\PYGemacs{p}{,} \PYGemacs{n}{sigma}\PYGemacs{p}{)}
+        \PYGemacs{n}{rtrns} \PYGemacs{o}{+=} \PYGemacs{n}{current\PYGemacsZus{}trade}
+    \PYGemacs{k}{return} \PYGemacs{n}{rtrns}
+
+\PYGemacs{c+c1}{\PYGemacsZsh{}tr\PYGemacsZus{}mins = minimize(lambda x: \PYGemacsZhy{}first\PYGemacsZus{}half\PYGemacsZus{}trades(*x), x0=[1, 1, 1])}
+\end{Verbatim}
